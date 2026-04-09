@@ -162,10 +162,11 @@ function Sidebar({ mobile, onClose }) {
               <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
               <p className="text-xs text-gray-400 truncate">{user.email}</p>
             </div>
-            <button onClick={() => dispatch(logout())} title="Sign out"
-              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-              <LogOut size={15} />
-            </button>
+            <button onClick={() => { dispatch(logout()); navigate('/login') }}
+             className="w-full flex items-center justify-center gap-2 px-3 py-2.5 mt-1 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
+            <LogOut size={16} />
+              Sign Out
+             </button>
           </div>
         </div>
       )}
