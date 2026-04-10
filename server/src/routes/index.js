@@ -11,6 +11,8 @@ const ws      = require('../controllers/workspaceController')
 const team    = require('../controllers/teamController')
 const proj    = require('../controllers/projectController')
 const task    = require('../controllers/taskController')
+const search  = require('../controllers/searchController')
+const notify  = require('../controllers/notificationController')
 
 const router = Router()
 
@@ -126,5 +128,13 @@ router.post('/tasks/:id/comments',
 
 router.put('/tasks/:id/comments/:commentId',  authenticate, task.updateComment)
 router.delete('/tasks/:id/comments/:commentId', authenticate, task.deleteComment)
+
+// ── Search ────────────────────────────────────────────────────────────────────
+router.get('/workspaces/:workspaceId/search', authenticate, requireWorkspaceRole('member'), search.search)
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+router.get('/notifications',        authenticate, notify.list)
+router.patch('/notifications/read', authenticate, notify.markAllAsRead)
+router.patch('/notifications/:id/read', authenticate, notify.markAsRead)
 
 module.exports = router

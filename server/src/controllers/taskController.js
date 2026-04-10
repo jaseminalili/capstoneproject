@@ -2,6 +2,7 @@ const { query, getClient } = require('../db/pool')
 const R      = require('../utils/response')
 const logger = require('../utils/logger')
 const email  = require('../services/emailService')
+const notify = require('./notificationController')
 const config = require('../config')
 const { recalcProgress } = require('./projectController')
 
@@ -98,18 +99,28 @@ exports.create = async (req, res, next) => {
 
     await logActivity(t.id, req.user.id, 'created', null, null, title)
 
-    // Email notification if assigned to someone else
+    // Notification if assigned to someone else
     if (assignee_id && assignee_id !== req.user.id) {
       const [assigneeRow, projectRow] = await Promise.all([
         query('SELECT name,email FROM users WHERE id=$1', [assignee_id]),
         query('SELECT name,status,priority,progress FROM projects WHERE id=$1', [req.params.projectId]),
       ])
-      const assignee = assigneeRow.rows[0]
-      const proj     = projectRow.rows[0]
-      if (assignee?.email) {
+      const assigneeData = assigneeRow.rows[0]
+      const proj         = projectRow.rows[0]
+
+      // In-app notification
+      notify.createNotification(
+        assignee_id,
+        'task_assigned',
+        'New Task Assigned',
+        `${req.user.name} assigned you: ${title}`,
+        `/task/${t.id}?projectId=${req.params.projectId}`
+      )
+
+      if (assigneeData?.email) {
         email.sendTaskAssignment({
-          to:              assignee.email,
-          assigneeName:    assignee.name,
+          to:              assigneeData.email,
+          assigneeName:    assigneeData.name,
           assignerName:    req.user.name,
           taskTitle:       title,
           taskDescription: description || '',
@@ -141,7 +152,6 @@ exports.update = async (req, res, next) => {
     const updates = []
     const vals    = []
     let   idx     = 1
-    const track   = [['title',title],['description',description],['status',status],['priority',priority],['type',type],['due_date',due_date]]
 
     if (title !== undefined)            { updates.push(`title=$${idx++}`);            vals.push(title) }
     if (description !== undefined)      { updates.push(`description=$${idx++}`);      vals.push(description) }
@@ -163,25 +173,47 @@ exports.update = async (req, res, next) => {
     const progress = await recalcProgress(prev.project_id)
 
     // Log changed fields
-    for (const [field, newVal] of track) {
-      if (newVal !== undefined && String(prev[field]) !== String(newVal)) {
-        await logActivity(prev.id, req.user.id, 'updated', field, String(prev[field]), String(newVal))
+    const fieldsToTrack = {
+      title: 'title',
+      description: 'description',
+      status: 'status',
+      priority: 'priority',
+      type: 'type',
+      assignee_id: 'assignee',
+      due_date: 'due date',
+      estimated_hours: 'estimate',
+      actual_hours: 'actual hours'
+    }
+
+    for (const [key, label] of Object.entries(fieldsToTrack)) {
+      if (req.body[key] !== undefined && String(prev[key]) !== String(req.body[key])) {
+        await logActivity(prev.id, req.user.id, 'updated', label, String(prev[key]), String(req.body[key]))
       }
     }
 
-    // Email if assignee changed
+    // Notification if assignee changed
     const newAssignee = assignee_id !== undefined ? (assignee_id || null) : prev.assignee_id
     if (assignee_id !== undefined && newAssignee && newAssignee !== prev.assignee_id && newAssignee !== req.user.id) {
       const [assigneeRow, projectRow] = await Promise.all([
         query('SELECT name,email FROM users WHERE id=$1', [newAssignee]),
         query('SELECT name,status,priority,progress FROM projects WHERE id=$1', [prev.project_id]),
       ])
-      const assignee = assigneeRow.rows[0]
-      const proj     = projectRow.rows[0]
-      if (assignee?.email) {
+      const assigneeData = assigneeRow.rows[0]
+      const proj         = projectRow.rows[0]
+
+      // In-app notification
+      notify.createNotification(
+        newAssignee,
+        'task_assigned',
+        'Task Assigned to You',
+        `${req.user.name} assigned you: ${full.title}`,
+        `/task/${full.id}?projectId=${prev.project_id}`
+      )
+
+      if (assigneeData?.email) {
         email.sendTaskAssignment({
-          to:              assignee.email,
-          assigneeName:    assignee.name,
+          to:              assigneeData.email,
+          assigneeName:    assigneeData.name,
           assignerName:    req.user.name,
           taskTitle:       full.title,
           taskDescription: full.description || '',
@@ -235,6 +267,20 @@ exports.addComment = async (req, res, next) => {
     )).rows[0]
 
     await logActivity(req.params.id, req.user.id, 'commented', null, null, content.slice(0, 60))
+
+    // Notify assignee and reporter if they are not the commenter
+    const taskData = (await query('SELECT assignee_id, reporter_id, title FROM tasks WHERE id=$1', [req.params.id])).rows[0]
+    const recipients = [...new Set([taskData.assignee_id, taskData.reporter_id].filter(id => id && id !== req.user.id))]
+    
+    for (const uid of recipients) {
+      notify.createNotification(
+        uid,
+        'task_comment',
+        'New Comment',
+        `${req.user.name} commented on "${taskData.title}"`,
+        `/task/${req.params.id}`
+      )
+    }
 
     R.created(res, full, 'Comment added.')
   } catch (err) { next(err) }
