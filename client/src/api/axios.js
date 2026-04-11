@@ -5,6 +5,7 @@ const api = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '') + '/',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 })
 
 // Attach JWT on every request
