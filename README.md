@@ -316,18 +316,28 @@ After running `npm run db:seed`:
 
 ## 🌐 Deployment
 
-### Backend (Railway / Render / Fly.io)
-1. Push `server/` to GitHub
-2. Create a PostgreSQL add-on (connection string provided automatically)
-3. Set environment variables (same as `.env`)
-4. Start command: `npm start`
-5. After first deploy: trigger `npm run db:init` then `npm run db:seed`
+### 1. Backend (Already Deployed)
+The Express API is hosted on Vercel at:
+`https://capstoneproject-drab-five.vercel.app/api`
 
-### Frontend (Vercel / Netlify)
-1. Push `client/` to GitHub
-2. Set environment variable: `VITE_API_URL=https://your-backend.railway.app/api`
-3. Build command: `npm run build`
-4. Output directory: `dist`
+**Environment Variables in Vercel:**
+- `DATABASE_URL`: Your PostgreSQL connection string.
+- `JWT_SECRET`: A long random string.
+- `FRONTEND_URL`: Your Vercel frontend URL (e.g., `https://taskflow-client.vercel.app`).
+- `CLIENT_ORIGIN`: Same as `FRONTEND_URL`.
+- `SMTP_USER` / `SMTP_PASS`: For email notifications.
+
+### 2. Frontend (Vercel)
+1. **GitHub Sync**: Push your code to a GitHub repository.
+2. **Import to Vercel**:
+    - Select the repository.
+    - **Framework Preset**: Vite.
+    - **Root Directory**: `client`.
+3. **Environment Variables**:
+    - Add `VITE_API_URL` = `https://capstoneproject-drab-five.vercel.app/api`
+4. **Deploy**: Vercel will build and host the app automatically.
+
+> **Note:** The `client/vercel.json` file handles SPA routing, ensuring that refreshing the page on a dashboard or project route doesn't return a 404.
 
 ---
 
