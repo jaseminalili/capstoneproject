@@ -160,18 +160,18 @@ function Sidebar({ mobile, onClose }) {
       {/* User Profile */}
       {user && (
         <div className="p-3 border-t border-gray-100">
-          <div className="flex items-center gap-2.5 px-1 py-1">
-            <Avatar user={user} size="sm" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
-              <p className="text-xs text-gray-400 truncate">{user.email}</p>
-            </div>
-            <button onClick={() => { dispatch(logout()); navigate('/login') }}
-             className="w-full flex items-center justify-center gap-2 px-3 py-2.5 mt-1 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
-            <LogOut size={16} />
-              Sign Out
+         <div className="flex items-center gap-2.5 px-1 py-1">
+  <Avatar user={user} size="sm" />
+  <div className="flex-1 min-w-0">
+    <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+    <p className="text-xs text-gray-400 truncate">{user.email}</p>
+  </div>
+</div>
+<button onClick={() => { dispatch(logout()); navigate('/login') }}
+  className="w-full flex items-center justify-center gap-2 px-3 py-2 mt-1 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
+  <LogOut size={16} />
+  Sign Out
              </button>
-          </div>
         </div>
       )}
     </div>
