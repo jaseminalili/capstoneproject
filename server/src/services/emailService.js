@@ -8,10 +8,11 @@ let transporter
 function getTransporter() {
   if (!transporter) {
     transporter = nodemailer.createTransport({
-      host:   config.email.host,
-      port:   config.email.port,
-      secure: config.email.secure,
-      auth:   { user: config.email.user, pass: config.email.pass },
+      service: 'gmail',
+      auth: {
+        user: config.email.user,
+        pass: config.email.pass,
+      },
     })
     transporter.verify()
       .then(() => logger.info('✅  Email service ready'))
