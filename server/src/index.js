@@ -57,10 +57,10 @@ app.use(notFound)
 app.use(errorHandler)
 
 // ── Start server ──────────────────────────────────────────────────────────────
-app.listen(config.port, () => {
-  logger.info(`🚀  TaskFlow API running on http://localhost:${config.port}`)
-  logger.info(`    Environment : ${config.env}`)
-  logger.info(`    CORS origin : ${config.cors.origin}`)
-})
+if (process.env.VERCEL !== '1') {
+  app.listen(config.port, () => {
+    logger.info(`🚀  TaskFlow API running on http://localhost:${config.port}`)
+  })
+}
 
 module.exports = app

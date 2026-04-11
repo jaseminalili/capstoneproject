@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/axios'
 
-export const fetchWorkspaces = createAsyncThunk('ws/list',   async () => api.get('workspaces'))
-export const createWorkspace = createAsyncThunk('ws/create', async (data) => api.post('workspaces', data))
-export const updateWorkspace = createAsyncThunk('ws/update', async ({ id, data }) => api.put(`workspaces/${id}`, data))
+export const fetchWorkspaces = createAsyncThunk('ws/list',   async () => api.get('/workspaces'))
+export const createWorkspace = createAsyncThunk('ws/create', async (data) => api.post('/workspaces', data))
+export const updateWorkspace = createAsyncThunk('ws/update', async ({ id, data }) => api.put(`/workspaces/${id}`, data))
 
 const getSavedWorkspace = () => { try { return JSON.parse(localStorage.getItem('tf_workspace')) } catch { return null } }
 

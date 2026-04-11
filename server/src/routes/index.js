@@ -1,7 +1,5 @@
 const { Router } = require('express')
-const rateLimit  = require('express-rate-limit')
 const { body, param, query: qv } = require('express-validator')
-const config = require('../config')
 
 const { authenticate, requireWorkspaceRole, requireProjectMember } = require('../middleware/auth')
 const { validate } = require('../middleware/errorHandler')
@@ -15,21 +13,6 @@ const search  = require('../controllers/searchController')
 const notify  = require('../controllers/notificationController')
 
 const router = Router()
-
-// ── Rate limiters ─────────────────────────────────────────────────────────────
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, max: 20,
-  message: { success: false, message: 'Too many requests. Try again in 15 minutes.' },
-})
-
-const apiLimiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max:      config.rateLimit.max,
-  message: { success: false, message: 'Too many requests.' },
-})
-
-router.use('/auth', authLimiter)
-router.use(apiLimiter)
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 router.post('/auth/register',
