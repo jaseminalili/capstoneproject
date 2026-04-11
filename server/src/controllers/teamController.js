@@ -78,9 +78,9 @@ exports.inviteMember = async (req, res, next) => {
       [workspaceId]
     )).rows
 
-    // Send email (non-blocking)
+    // Send email (awaited for Serverless compatibility)
     const frontendUrl = getFrontendUrl(req)
-    email.sendWorkspaceInvitation({
+    const result = await email.sendWorkspaceInvitation({
       to:            toEmail,
       inviteeName:   invitee?.name || null,
       inviterName:   inviter?.name || 'A teammate',
@@ -89,9 +89,11 @@ exports.inviteMember = async (req, res, next) => {
       projects,
       token:         inv.token,
       frontendUrl,
-    }).then(result => {
-      if (!result.success) logger.warn(`Invitation email failed for ${toEmail}:`, result.error)
     })
+    
+    if (!result.success) {
+      logger.warn(`Invitation email failed for ${toEmail}:`, result.error)
+    }
 
     logger.info(`Invitation sent to ${toEmail} for workspace ${ws.name}`)
     R.created(res, {

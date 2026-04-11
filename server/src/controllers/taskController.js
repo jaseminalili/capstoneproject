@@ -127,24 +127,25 @@ exports.create = async (req, res, next) => {
       )
 
       if (assigneeData?.email) {
-        email.sendTaskAssignment({
-          to:              assigneeData.email,
-          assigneeName:    assigneeData.name,
-          assignerName:    req.user.name,
-          taskTitle:       title,
-          taskDescription: description || '',
-          taskPriority:    priority || 'medium',
-          taskType:        type || 'task',
-          taskStatus:      status || 'todo',
-          dueDate:         due_date,
-          projectName:     proj?.name || '',
-          projectStatus:   proj?.status || '',
-          projectPriority: proj?.priority || '',
-          projectProgress: proj?.progress || 0,
-          taskId:          t.id,
-          projectId:       req.params.projectId,
-          frontendUrl:     getFrontendUrl(req),
-        })
+      // Send email (awaited for Serverless compatibility)
+      await email.sendTaskAssignment({
+        to:              assigneeData.email,
+        assigneeName:    assigneeData.name,
+        assignerName:    req.user.name,
+        taskTitle:       title,
+        taskDescription: description || '',
+        taskPriority:    priority || 'medium',
+        taskType:        type || 'task',
+        taskStatus:      status || 'todo',
+        dueDate:         due_date,
+        projectName:     proj?.name || '',
+        projectStatus:   proj?.status || '',
+        projectPriority: proj?.priority || '',
+        projectProgress: proj?.progress || 0,
+        taskId:          t.id,
+        projectId:       req.params.projectId,
+        frontendUrl:     getFrontendUrl(req),
+      })
       }
     }
 
@@ -221,7 +222,8 @@ exports.update = async (req, res, next) => {
       )
 
       if (assigneeData?.email) {
-        email.sendTaskAssignment({
+        // Send email (awaited for Serverless compatibility)
+        await email.sendTaskAssignment({
           to:              assigneeData.email,
           assigneeName:    assigneeData.name,
           assignerName:    req.user.name,
