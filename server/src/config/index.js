@@ -31,7 +31,7 @@ const config = {
   },
 
   cors: {
-    origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+    origin:      process.env.CLIENT_ORIGIN ? process.env.CLIENT_ORIGIN.split(',').map(o => o.trim()) : ['http://localhost:5173'],
     credentials: true,
   },
 
