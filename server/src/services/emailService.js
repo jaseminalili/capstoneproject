@@ -235,6 +235,10 @@ async function sendWorkspaceInvitation(options) {
   const { to, workspaceName, token, frontendUrl } = options
   const baseUrl   = frontendUrl || config.frontendUrl
   const acceptUrl = `${baseUrl}/invite/accept?token=${token}`
+  
+  logger.info(`📧  Preparing invitation for ${to}`)
+  logger.info(`🔗  Detected Base URL: ${baseUrl}`)
+  
   const html = buildWorkspaceInviteEmail({ ...options, acceptUrl })
 
   try {
@@ -245,10 +249,10 @@ async function sendWorkspaceInvitation(options) {
       html,
       text:    `You've been invited to join ${workspaceName}. Accept: ${acceptUrl} (expires in 7 days)`,
     })
-    logger.info(`📧  Invitation sent → ${to} (${info.messageId})`)
+    logger.info(`✅  Invitation sent to ${to} (ID: ${info.messageId})`)
     return { success: true, messageId: info.messageId }
   } catch (err) {
-    logger.warn(`📧  Failed to send invitation to ${to}:`, err.message)
+    logger.error(`❌  FAILED to send invitation to ${to}:`, err)
     return { success: false, error: err.message }
   }
 }
@@ -257,6 +261,10 @@ async function sendTaskAssignment(options) {
   const { to, taskTitle, taskId, projectId, frontendUrl } = options
   const baseUrl = frontendUrl || config.frontendUrl
   const taskUrl = `${baseUrl}/task/${taskId}?projectId=${projectId}`
+  
+  logger.info(`📧  Preparing task assignment for ${to}`)
+  logger.info(`🔗  Detected Base URL: ${baseUrl}`)
+
   const html = buildTaskAssignmentEmail({ ...options, taskUrl })
 
   try {
@@ -267,10 +275,10 @@ async function sendTaskAssignment(options) {
       html,
       text:    `${options.assignerName} assigned you "${taskTitle}" in ${options.projectName}. Due: ${fmt(options.dueDate)}. View: ${taskUrl}`,
     })
-    logger.info(`📧  Task assignment sent → ${to}`)
+    logger.info(`✅  Task assignment sent to ${to} (ID: ${info.messageId})`)
     return { success: true, messageId: info.messageId }
   } catch (err) {
-    logger.warn(`📧  Failed to send task assignment to ${to}:`, err.message)
+    logger.error(`❌  FAILED to send task assignment to ${to}:`, err)
     return { success: false, error: err.message }
   }
 }

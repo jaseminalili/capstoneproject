@@ -5,6 +5,15 @@ const email  = require('../services/emailService')
 const notify = require('./notificationController')
 const config = require('../config')
 const { recalcProgress } = require('./projectController')
+const getFrontendUrl = (req) => {
+  const origin = req.get('origin')
+  if (origin && origin !== 'null') return origin
+  const referer = req.get('referer')
+  if (referer) {
+    try { return new URL(referer).origin } catch (e) {}
+  }
+  return config.frontendUrl
+}
 
 const TASK_QUERY = `
   SELECT t.*,
@@ -134,7 +143,7 @@ exports.create = async (req, res, next) => {
           projectProgress: proj?.progress || 0,
           taskId:          t.id,
           projectId:       req.params.projectId,
-          frontendUrl:     req.headers.origin,
+          frontendUrl:     getFrontendUrl(req),
         })
       }
     }
@@ -228,7 +237,7 @@ exports.update = async (req, res, next) => {
           projectProgress: proj?.progress || 0,
           taskId:          full.id,
           projectId:       prev.project_id,
-          frontendUrl:     req.headers.origin,
+          frontendUrl:     getFrontendUrl(req),
         })
       }
     }

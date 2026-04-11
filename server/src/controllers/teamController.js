@@ -3,6 +3,15 @@ const R      = require('../utils/response')
 const logger = require('../utils/logger')
 const email  = require('../services/emailService')
 const config = require('../config')
+const getFrontendUrl = (req) => {
+  const origin = req.get('origin')
+  if (origin && origin !== 'null') return origin
+  const referer = req.get('referer')
+  if (referer) {
+    try { return new URL(referer).origin } catch (e) {}
+  }
+  return config.frontendUrl
+}
 
 exports.getMembers = async (req, res, next) => {
   try {
@@ -70,6 +79,7 @@ exports.inviteMember = async (req, res, next) => {
     )).rows
 
     // Send email (non-blocking)
+    const frontendUrl = getFrontendUrl(req)
     email.sendWorkspaceInvitation({
       to:            toEmail,
       inviteeName:   invitee?.name || null,
@@ -78,7 +88,7 @@ exports.inviteMember = async (req, res, next) => {
       role,
       projects,
       token:         inv.token,
-      frontendUrl:   req.headers.origin,
+      frontendUrl,
     }).then(result => {
       if (!result.success) logger.warn(`Invitation email failed for ${toEmail}:`, result.error)
     })
@@ -89,7 +99,7 @@ exports.inviteMember = async (req, res, next) => {
       email:     inv.email,
       role:      inv.role,
       expiresAt: inv.expires_at,
-      acceptUrl: `${req.headers.origin || config.frontendUrl}/invite/accept?token=${inv.token}`,
+      acceptUrl: `${frontendUrl}/invite/accept?token=${inv.token}`,
     })
   } catch (err) { next(err) }
 }
