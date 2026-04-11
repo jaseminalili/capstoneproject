@@ -14,7 +14,27 @@ const app = express()
 // ── Security & performance ────────────────────────────────────────────────────
 app.use(helmet())
 app.use(compression())
-app.use(cors({ origin: config.cors.origin, credentials: config.cors.credentials }))
+
+// Dynamic CORS: Allow localhost and any Vercel subdomain
+const allowedOrigins = config.cors.origin
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true)
+    
+    const isLocalhost = origin.startsWith('http://localhost')
+    const isVercel    = origin.endsWith('.vercel.app')
+    const isAllowed   = Array.isArray(allowedOrigins) ? allowedOrigins.includes(origin) : allowedOrigins === origin
+
+    if (isLocalhost || isVercel || isAllowed) {
+      callback(null, true)
+    } else {
+      logger.warn(`🚫 CORS blocked origin: ${origin}`)
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true
+}))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
