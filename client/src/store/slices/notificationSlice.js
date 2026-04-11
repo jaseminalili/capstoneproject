@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/axios'
 
-export const fetchNotifications = createAsyncThunk('notify/list', async () => api.get('/notifications'))
-export const markAsRead       = createAsyncThunk('notify/read',  async id => api.patch(`/notifications/${id}/read`))
-export const markAllRead      = createAsyncThunk('notify/allRead', async () => api.patch('/notifications/read'))
+export const fetchNotifications = createAsyncThunk('notify/list', async () => api.get('notifications'))
+export const markAsRead       = createAsyncThunk('notify/read',  async id => api.patch(`notifications/${id}/read`))
+export const markAllRead      = createAsyncThunk('notify/allRead', async () => api.patch('notifications/read'))
 
 const notificationSlice = createSlice({
   name: 'notifications',

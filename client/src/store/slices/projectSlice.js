@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/axios'
 
-export const fetchProjects = createAsyncThunk('proj/list',   async (wsId) => api.get(`/workspaces/${wsId}/projects`))
-export const createProject = createAsyncThunk('proj/create', async ({ wsId, data }) => api.post(`/workspaces/${wsId}/projects`, data))
-export const updateProject = createAsyncThunk('proj/update', async ({ id, data }) => api.put(`/projects/${id}`, data))
-export const deleteProject = createAsyncThunk('proj/delete', async id => { await api.delete(`/projects/${id}`); return id })
+export const fetchProjects = createAsyncThunk('proj/list',   async (wsId) => api.get(`workspaces/${wsId}/projects`))
+export const createProject = createAsyncThunk('proj/create', async ({ wsId, data }) => api.post(`workspaces/${wsId}/projects`, data))
+export const updateProject = createAsyncThunk('proj/update', async ({ id, data }) => api.put(`projects/${id}`, data))
+export const deleteProject = createAsyncThunk('proj/delete', async id => { await api.delete(`projects/${id}`); return id })
 
 const projSlice = createSlice({
   name: 'projects',

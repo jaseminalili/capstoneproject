@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/axios'
 
-export const loginUser    = createAsyncThunk('auth/login',    async (body, { rejectWithValue }) => { try { return await api.post('/auth/login', body) } catch (e) { return rejectWithValue(e.message) } })
-export const registerUser = createAsyncThunk('auth/register', async (body, { rejectWithValue }) => { try { return await api.post('/auth/register', body) } catch (e) { return rejectWithValue(e.message) } })
-export const loadMe       = createAsyncThunk('auth/me',       async (_, { rejectWithValue })   => { try { return await api.get('/auth/me') }            catch (e) { return rejectWithValue(e.message) } })
-export const updateProfile= createAsyncThunk('auth/profile',  async (body, { rejectWithValue }) => { try { return await api.put('/auth/profile', body) }  catch (e) { return rejectWithValue(e.message) } })
+export const loginUser    = createAsyncThunk('auth/login',    async (body, { rejectWithValue }) => { try { return await api.post('auth/login', body) } catch (e) { return rejectWithValue(e.message) } })
+export const registerUser = createAsyncThunk('auth/register', async (body, { rejectWithValue }) => { try { return await api.post('auth/register', body) } catch (e) { return rejectWithValue(e.message) } })
+export const loadMe       = createAsyncThunk('auth/me',       async (_, { rejectWithValue })   => { try { return await api.get('auth/me') }            catch (e) { return rejectWithValue(e.message) } })
+export const updateProfile= createAsyncThunk('auth/profile',  async (body, { rejectWithValue }) => { try { return await api.put('auth/profile', body) }  catch (e) { return rejectWithValue(e.message) } })
 
 const hasToken = !!localStorage.getItem('tf_token')
 

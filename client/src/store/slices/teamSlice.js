@@ -1,17 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/axios'
 
-export const fetchTeam        = createAsyncThunk('team/list',   async wsId => api.get(`/workspaces/${wsId}/members`))
-export const fetchWsUsers     = createAsyncThunk('team/users',  async wsId => api.get(`/workspaces/${wsId}/users`))
+export const fetchTeam        = createAsyncThunk('team/list',   async wsId => api.get(`workspaces/${wsId}/members`))
+export const fetchWsUsers     = createAsyncThunk('team/users',  async wsId => api.get(`workspaces/${wsId}/users`))
 export const inviteMember     = createAsyncThunk('team/invite', async ({ wsId, data }, { rejectWithValue }) => {
-  try { return await api.post(`/workspaces/${wsId}/invite`, data) }
+  try { return await api.post(`workspaces/${wsId}/invite`, data) }
   catch (e) { return rejectWithValue(e.message) }
 })
 export const removeMember     = createAsyncThunk('team/remove', async ({ wsId, userId }) => {
-  await api.delete(`/workspaces/${wsId}/members/${userId}`); return userId
+  await api.delete(`workspaces/${wsId}/members/${userId}`); return userId
 })
 export const updateMemberRole = createAsyncThunk('team/role',   async ({ wsId, userId, role }) => {
-  await api.patch(`/workspaces/${wsId}/members/${userId}/role`, { role }); return { userId, role }
+  await api.patch(`workspaces/${wsId}/members/${userId}/role`, { role }); return { userId, role }
 })
 
 const teamSlice = createSlice({
