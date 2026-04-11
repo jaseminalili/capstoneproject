@@ -232,8 +232,9 @@ function buildTaskAssignmentEmail({ assigneeName, assignerName, taskTitle, taskD
 
 // ── Public send functions ─────────────────────────────────────────────────────
 async function sendWorkspaceInvitation(options) {
-  const { to, workspaceName, token } = options
-  const acceptUrl = `${config.frontendUrl}/invite/accept?token=${token}`
+  const { to, workspaceName, token, frontendUrl } = options
+  const baseUrl   = frontendUrl || config.frontendUrl
+  const acceptUrl = `${baseUrl}/invite/accept?token=${token}`
   const html = buildWorkspaceInviteEmail({ ...options, acceptUrl })
 
   try {
@@ -253,8 +254,9 @@ async function sendWorkspaceInvitation(options) {
 }
 
 async function sendTaskAssignment(options) {
-  const { to, taskTitle, taskId, projectId } = options
-  const taskUrl = `${config.frontendUrl}/task/${taskId}?projectId=${projectId}`
+  const { to, taskTitle, taskId, projectId, frontendUrl } = options
+  const baseUrl = frontendUrl || config.frontendUrl
+  const taskUrl = `${baseUrl}/task/${taskId}?projectId=${projectId}`
   const html = buildTaskAssignmentEmail({ ...options, taskUrl })
 
   try {

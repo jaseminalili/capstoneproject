@@ -78,6 +78,7 @@ exports.inviteMember = async (req, res, next) => {
       role,
       projects,
       token:         inv.token,
+      frontendUrl:   req.headers.origin,
     }).then(result => {
       if (!result.success) logger.warn(`Invitation email failed for ${toEmail}:`, result.error)
     })
@@ -88,7 +89,7 @@ exports.inviteMember = async (req, res, next) => {
       email:     inv.email,
       role:      inv.role,
       expiresAt: inv.expires_at,
-      acceptUrl: `${config.frontendUrl}/invite/accept?token=${inv.token}`,
+      acceptUrl: `${req.headers.origin || config.frontendUrl}/invite/accept?token=${inv.token}`,
     })
   } catch (err) { next(err) }
 }

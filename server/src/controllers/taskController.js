@@ -134,6 +134,7 @@ exports.create = async (req, res, next) => {
           projectProgress: proj?.progress || 0,
           taskId:          t.id,
           projectId:       req.params.projectId,
+          frontendUrl:     req.headers.origin,
         })
       }
     }
@@ -227,6 +228,7 @@ exports.update = async (req, res, next) => {
           projectProgress: proj?.progress || 0,
           taskId:          full.id,
           projectId:       prev.project_id,
+          frontendUrl:     req.headers.origin,
         })
       }
     }
