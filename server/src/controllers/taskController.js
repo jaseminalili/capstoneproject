@@ -128,7 +128,7 @@ exports.create = async (req, res, next) => {
 
       if (assigneeData?.email) {
       // Send email (awaited for Serverless compatibility)
-      await email.sendTaskAssignment({
+      const result = await email.sendTaskAssignment({
         to:              assigneeData.email,
         assigneeName:    assigneeData.name,
         assignerName:    req.user.name,
@@ -146,6 +146,11 @@ exports.create = async (req, res, next) => {
         projectId:       req.params.projectId,
         frontendUrl:     getFrontendUrl(req),
       })
+
+      if (!result.success) {
+        logger.warn(`Task email failed for ${assigneeData.email}:`, result.error)
+        return R.badRequest(res, `Task created, but email notification failed: ${result.error}.`)
+      }
       }
     }
 
@@ -223,7 +228,7 @@ exports.update = async (req, res, next) => {
 
       if (assigneeData?.email) {
         // Send email (awaited for Serverless compatibility)
-        await email.sendTaskAssignment({
+        const result = await email.sendTaskAssignment({
           to:              assigneeData.email,
           assigneeName:    assigneeData.name,
           assignerName:    req.user.name,
@@ -241,6 +246,11 @@ exports.update = async (req, res, next) => {
           projectId:       prev.project_id,
           frontendUrl:     getFrontendUrl(req),
         })
+
+        if (!result.success) {
+          logger.warn(`Task email failed for ${assigneeData.email}:`, result.error)
+          return R.badRequest(res, `Task updated, but email notification failed: ${result.error}.`)
+        }
       }
     }
 

@@ -93,6 +93,7 @@ exports.inviteMember = async (req, res, next) => {
     
     if (!result.success) {
       logger.warn(`Invitation email failed for ${toEmail}:`, result.error)
+      return R.badRequest(res, `Invitation created, but email failed to send: ${result.error}. Please check your SMTP settings.`)
     }
 
     logger.info(`Invitation sent to ${toEmail} for workspace ${ws.name}`)
