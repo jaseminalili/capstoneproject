@@ -65,7 +65,14 @@ export function ProjectDetail() {
   const handleDelete = async () => { try { const r = await dispatch(deleteTask(delId)).unwrap(); dispatch(patchProjectProgress({id,progress:r.progress})); toast.success('Task deleted.') } catch(e){toast.error(e.message)} }
  
   const GROUPS = {backlog:'Backlog',todo:'To Do',in_progress:'In Progress',in_review:'In Review',done:'Done',cancelled:'Cancelled'}
-  const COLORS = {backlog:'bg-slate-100 dark:bg-slate-800',todo:'bg-gray-100 dark:bg-gray-700',in_progress:'bg-blue-100',in_review:'bg-violet-100',done:'bg-emerald-100',cancelled:'bg-red-100'}
+  const COLORS = {
+    backlog:     'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+    todo:        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+    in_progress: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+    in_review:   'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300',
+    done:        'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
+    cancelled:   'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  }
   const PRIO_DOT = {critical:'#DC2626',high:'#EA580C',medium:'#D97706',low:'#16A34A'}
  
   if (loading && tasks.length === 0) return <PageSpinner />
@@ -74,8 +81,8 @@ export function ProjectDetail() {
     <div className="p-6 sm:p-8 max-w-7xl mx-auto">
       <div className="flex items-center gap-2 mb-2">
         <button onClick={() => navigate('/projects')} className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors font-medium"><ArrowLeft size={15}/>Projects</button>
-        <span className="text-gray-300">/</span>
-        <span className="text-sm text-gray-600 font-medium truncate">{proj?.name}</span>
+        <span className="text-gray-300 dark:text-gray-600">/</span>
+        <span className="text-sm text-gray-600 dark:text-gray-400 font-medium truncate">{proj?.name}</span>
       </div>
       <div className="flex items-start justify-between mb-6">
         <div><h1 className="text-2xl font-bold text-gray-900 dark:text-white">{proj?.name||'Project'}</h1><p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{proj?.description}</p></div>
@@ -98,7 +105,7 @@ export function ProjectDetail() {
           return (
             <div key={status}>
               <div className="flex items-center gap-2.5 mb-3">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold dark:text-gray-200 ${COLORS[status]}`}>{label}</span>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${COLORS[status]}`}>{label}</span>
                 <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">{gt.length}</span>
               </div>
               {gt.length === 0 ? <p className="text-xs text-gray-400 dark:text-gray-500 italic pl-2">No tasks</p> : gt.map(t => (
@@ -107,7 +114,7 @@ export function ProjectDetail() {
                   <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{background:PRIO_DOT[t.priority]||'#9CA3AF'}}/>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{t.title}</p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap"><TypeBadge value={t.type}/>{t.due_date&&<span className="text-xs text-gray-400">{fmt(t.due_date)}</span>}</div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap"><TypeBadge value={t.type}/>{t.due_date&&<span className="text-xs text-gray-400 dark:text-gray-500">{fmt(t.due_date)}</span>}</div>
                   </div>
                   {t.assignee_name&&<Avatar user={{name:t.assignee_name,avatar:t.assignee_avatar,color:t.assignee_color}} size="sm"/>}
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e=>e.stopPropagation()}>
