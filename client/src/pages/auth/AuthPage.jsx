@@ -27,9 +27,9 @@ export default function AuthPage({ mode = 'login' }) {
   const navigate   = useNavigate()
   const [searchParams] = useSearchParams()
   const { loading, error, user } = useSelector(s => s.auth)
-  const [show, setShow]         = useState(false)
+  const [show,        setShow]        = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [form, setForm]         = useState({ name: '', email: '', password: '', confirmPassword: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const isLogin = mode === 'login'
  
   // Force light mode on auth pages
@@ -84,6 +84,11 @@ export default function AuthPage({ mode = 'login' }) {
   }
  
   const allRulesPassed = PASSWORD_RULES.every(r => r.test(form.password))
+ 
+  // Clean up session expired message for login page
+  const displayError = error === 'Session expired. Please log in again.'
+    ? 'Invalid email or password. Please try again.'
+    : error
  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
@@ -148,9 +153,23 @@ export default function AuthPage({ mode = 'login' }) {
  
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-gray-700">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                {/* Forgot password — only on login */}
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => toast('To reset your password, login and go to Settings → Change Password.', {
+                      icon: '🔑',
+                      duration: 5000,
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                    Forgot your password?
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <input
                   type={show ? 'text' : 'password'} value={form.password}
@@ -216,14 +235,15 @@ export default function AuthPage({ mode = 'login' }) {
             )}
  
             {/* Error */}
-            {error && (
+            {displayError && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center gap-2">
-                <span className="shrink-0">⚠</span> {error}
+                <span className="shrink-0">⚠</span> {displayError}
               </div>
             )}
  
             {/* Submit */}
-            <button type="submit" disabled={loading || (!isLogin && !allRulesPassed)}
+            <button type="submit"
+              disabled={loading || (!isLogin && !allRulesPassed)}
               className="w-full btn-primary justify-center py-3 text-sm font-semibold mt-2 disabled:opacity-50">
               {loading ? (
                 <span className="flex items-center gap-2">

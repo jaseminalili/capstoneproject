@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Plus, User, Check, Trash2, AlertTriangle, Lock } from 'lucide-react'
+import { Building2, Plus, User, Check, Trash2, AlertTriangle, Lock, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { createWorkspace, updateWorkspace, deleteWorkspace, setCurrentWorkspace, logout, updateProfile } from '../../store/store'
 import { Avatar, RoleBadge } from '../../components/ui'
@@ -39,10 +39,13 @@ export default function Settings() {
   const [profileSaved,  setProfileSaved]  = useState(false)
  
   // Password
-  const [currentPwd, setCurrentPwd] = useState('')
-  const [newPwd,     setNewPwd]     = useState('')
-  const [confirmPwd, setConfirmPwd] = useState('')
-  const [savingPwd,  setSavingPwd]  = useState(false)
+  const [currentPwd,     setCurrentPwd]     = useState('')
+  const [newPwd,         setNewPwd]         = useState('')
+  const [confirmPwd,     setConfirmPwd]     = useState('')
+  const [savingPwd,      setSavingPwd]      = useState(false)
+  const [showCurrent,    setShowCurrent]    = useState(false)
+  const [showNew,        setShowNew]        = useState(false)
+  const [showConfirm,    setShowConfirm]    = useState(false)
  
   // Workspace settings
   const [wsName,   setWsName]   = useState(ws?.name || '')
@@ -53,10 +56,10 @@ export default function Settings() {
   const [saved,    setSaved]    = useState(false)
  
   // Delete
-  const [deleting,         setDeleting]         = useState(false)
-  const [deletingAcct,     setDeletingAcct]     = useState(false)
-  const [wsConfirmText,    setWsConfirmText]    = useState('')
-  const [acctConfirmText,  setAcctConfirmText]  = useState('')
+  const [deleting,        setDeleting]        = useState(false)
+  const [deletingAcct,    setDeletingAcct]    = useState(false)
+  const [wsConfirmText,   setWsConfirmText]   = useState('')
+  const [acctConfirmText, setAcctConfirmText] = useState('')
  
   useEffect(() => {
     setWsName(ws?.name || '')
@@ -170,8 +173,6 @@ export default function Settings() {
           <User size={16} className="text-gray-500 dark:text-gray-400" />
           <h2 className="text-base font-bold text-gray-900 dark:text-white">Your Profile</h2>
         </div>
- 
-        {/* Avatar preview */}
         <div className="flex items-center gap-4 mb-5">
           <Avatar user={{ ...user, name: profileName, color: previewColor }} size="xl" />
           <div>
@@ -185,40 +186,27 @@ export default function Settings() {
             </p>
           </div>
         </div>
- 
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Display Name</label>
-            <input
-              value={profileName}
-              onChange={e => setProfileName(e.target.value)}
-              placeholder="Your full name"
-              className="input-field"
-            />
+            <input value={profileName} onChange={e => setProfileName(e.target.value)}
+              placeholder="Your full name" className="input-field" />
           </div>
- 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Avatar Color</label>
             <div className="flex gap-2 flex-wrap">
               {AVATAR_COLORS.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setPreviewColor(c)}
+                <button key={c} onClick={() => setPreviewColor(c)}
                   className={`w-8 h-8 rounded-full transition-all duration-150 ${
                     previewColor === c
                       ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110'
                       : 'hover:scale-105'
                   }`}
-                  style={{ background: c }}
-                />
+                  style={{ background: c }} />
               ))}
             </div>
           </div>
- 
-          <button
-            onClick={saveProfile}
-            disabled={savingProfile || !profileName.trim()}
-            className="btn-primary">
+          <button onClick={saveProfile} disabled={savingProfile || !profileName.trim()} className="btn-primary">
             {savingProfile ? 'Saving…' : profileSaved ? <><Check size={15} /> Saved!</> : 'Update Profile'}
           </button>
         </div>
@@ -231,26 +219,41 @@ export default function Settings() {
           <h2 className="text-base font-bold text-gray-900 dark:text-white">Change Password</h2>
         </div>
         <div className="space-y-4">
+ 
+          {/* Current Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Current Password</label>
-            <input
-              type="password"
-              value={currentPwd}
-              onChange={e => setCurrentPwd(e.target.value)}
-              placeholder="Enter current password"
-              className="input-field"
-            />
+            <div className="relative">
+              <input
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPwd}
+                onChange={e => setCurrentPwd(e.target.value)}
+                placeholder="Enter current password"
+                className="input-field pr-12"
+              />
+              <button type="button" onClick={() => setShowCurrent(s => !s)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                {showCurrent ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
           </div>
  
+          {/* New Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
-            <input
-              type="password"
-              value={newPwd}
-              onChange={e => setNewPwd(e.target.value)}
-              placeholder="Create a strong password"
-              className="input-field"
-            />
+            <div className="relative">
+              <input
+                type={showNew ? 'text' : 'password'}
+                value={newPwd}
+                onChange={e => setNewPwd(e.target.value)}
+                placeholder="Create a strong password"
+                className="input-field pr-12"
+              />
+              <button type="button" onClick={() => setShowNew(s => !s)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                {showNew ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
             {/* Password strength indicator */}
             {newPwd && (
               <div className="mt-2.5 space-y-1.5 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 border border-gray-100 dark:border-gray-600">
@@ -271,15 +274,22 @@ export default function Settings() {
             )}
           </div>
  
+          {/* Confirm New Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Confirm New Password</label>
-            <input
-              type="password"
-              value={confirmPwd}
-              onChange={e => setConfirmPwd(e.target.value)}
-              placeholder="Repeat new password"
-              className="input-field"
-            />
+            <div className="relative">
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPwd}
+                onChange={e => setConfirmPwd(e.target.value)}
+                placeholder="Repeat new password"
+                className="input-field pr-12"
+              />
+              <button type="button" onClick={() => setShowConfirm(s => !s)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
             {confirmPwd && newPwd !== confirmPwd && (
               <p className="text-xs text-red-500 mt-1.5">Passwords do not match</p>
             )}
@@ -329,8 +339,7 @@ export default function Settings() {
         <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">Your Workspaces</h2>
         <div className="space-y-2.5">
           {workspaces.map(w => (
-            <div
-              key={w.id}
+            <div key={w.id}
               onClick={() => { dispatch(setCurrentWorkspace(w)); navigate('/dashboard') }}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all cursor-pointer ${
                 ws?.id === w.id
@@ -360,12 +369,9 @@ export default function Settings() {
           Each workspace has its own projects, members, and settings.
         </p>
         <div className="flex gap-3">
-          <input
-            value={newWs} onChange={e => setNewWs(e.target.value)}
-            placeholder="e.g. Marketing Team"
-            className="input-field flex-1"
-            onKeyDown={e => e.key === 'Enter' && addWs()}
-          />
+          <input value={newWs} onChange={e => setNewWs(e.target.value)}
+            placeholder="e.g. Marketing Team" className="input-field flex-1"
+            onKeyDown={e => e.key === 'Enter' && addWs()} />
           <button onClick={addWs} disabled={!newWs.trim() || creating} className="btn-primary shrink-0">
             {creating ? 'Creating…' : 'Create'}
           </button>
@@ -385,18 +391,11 @@ export default function Settings() {
             and all its projects, tasks, and members. This action cannot be undone.
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-            Type{' '}
-            <strong className="text-gray-900 dark:text-white font-mono">{ws?.name}</strong>{' '}
-            to confirm:
+            Type <strong className="text-gray-900 dark:text-white font-mono">{ws?.name}</strong> to confirm:
           </p>
-          <input
-            value={wsConfirmText}
-            onChange={e => setWsConfirmText(e.target.value)}
-            placeholder={ws?.name}
-            className="input-field mb-3"
-          />
-          <button
-            onClick={handleDeleteWorkspace}
+          <input value={wsConfirmText} onChange={e => setWsConfirmText(e.target.value)}
+            placeholder={ws?.name} className="input-field mb-3" />
+          <button onClick={handleDeleteWorkspace}
             disabled={deleting || wsConfirmText !== ws?.name}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
             <Trash2 size={15} />
@@ -416,18 +415,11 @@ export default function Settings() {
           This action cannot be undone.
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          Type your email{' '}
-          <strong className="text-gray-900 dark:text-white font-mono">{user?.email}</strong>{' '}
-          to confirm:
+          Type your email <strong className="text-gray-900 dark:text-white font-mono">{user?.email}</strong> to confirm:
         </p>
-        <input
-          value={acctConfirmText}
-          onChange={e => setAcctConfirmText(e.target.value)}
-          placeholder={user?.email}
-          className="input-field mb-3"
-        />
-        <button
-          onClick={handleDeleteAccount}
+        <input value={acctConfirmText} onChange={e => setAcctConfirmText(e.target.value)}
+          placeholder={user?.email} className="input-field mb-3" />
+        <button onClick={handleDeleteAccount}
           disabled={deletingAcct || acctConfirmText !== user?.email}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
           <Trash2 size={15} />
