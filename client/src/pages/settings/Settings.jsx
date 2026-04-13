@@ -5,30 +5,30 @@ import { Building2, Plus, User, Check, Trash2, AlertTriangle } from 'lucide-reac
 import toast from 'react-hot-toast'
 import { createWorkspace, updateWorkspace, deleteWorkspace, setCurrentWorkspace, logout } from '../../store/store'
 import { Avatar, RoleBadge } from '../../components/ui'
- 
+
 export default function Settings() {
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
   const { current: ws, list: workspaces } = useSelector(s => s.workspace)
   const { user } = useSelector(s => s.auth)
- 
-  const [wsName,       setWsName]       = useState(ws?.name || '')
-  const [wsDesc,       setWsDesc]       = useState(ws?.description || '')
-  const [newWs,        setNewWs]        = useState('')
-  const [saving,       setSaving]       = useState(false)
-  const [creating,     setCreating]     = useState(false)
-  const [deleting,     setDeleting]     = useState(false)
-  const [deletingAcct, setDeletingAcct] = useState(false)
-  const [saved,        setSaved]        = useState(false)
-  const [confirmWs,    setConfirmWs]    = useState(false)
-  const [confirmAcct,  setConfirmAcct]  = useState(false)
- 
+
+  const [wsName,         setWsName]         = useState(ws?.name || '')
+  const [wsDesc,         setWsDesc]         = useState(ws?.description || '')
+  const [newWs,          setNewWs]          = useState('')
+  const [saving,         setSaving]         = useState(false)
+  const [creating,       setCreating]       = useState(false)
+  const [deleting,       setDeleting]       = useState(false)
+  const [deletingAcct,   setDeletingAcct]   = useState(false)
+  const [saved,          setSaved]          = useState(false)
+  const [wsConfirmText,  setWsConfirmText]  = useState('')
+  const [acctConfirmText,setAcctConfirmText]= useState('')
+
   useEffect(() => {
     setWsName(ws?.name || '')
     setWsDesc(ws?.description || '')
-    setConfirmWs(false)
+    setWsConfirmText('')
   }, [ws?.id])
- 
+
   const saveWs = async () => {
     if (!wsName.trim()) return
     setSaving(true)
@@ -40,7 +40,7 @@ export default function Settings() {
     } catch (e) { toast.error(e.message) }
     finally { setSaving(false) }
   }
- 
+
   const addWs = async () => {
     if (!newWs.trim()) return
     setCreating(true)
@@ -51,14 +51,12 @@ export default function Settings() {
     } catch (e) { toast.error(e.message) }
     finally { setCreating(false) }
   }
- 
+
   const handleDeleteWorkspace = async () => {
-    if (!confirmWs) { setConfirmWs(true); return }
     setDeleting(true)
     try {
       await dispatch(deleteWorkspace(ws.id)).unwrap()
       toast.success('Workspace deleted.')
-      setConfirmWs(false)
       const remaining = workspaces.filter(w => w.id !== ws.id)
       if (remaining.length > 0) {
         dispatch(setCurrentWorkspace(remaining[0]))
@@ -73,9 +71,8 @@ export default function Settings() {
       setDeleting(false)
     }
   }
- 
+
   const handleDeleteAccount = async () => {
-    if (!confirmAcct) { setConfirmAcct(true); return }
     setDeletingAcct(true)
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/auth/account`, {
@@ -91,16 +88,16 @@ export default function Settings() {
       setDeletingAcct(false)
     }
   }
- 
+
   const isOwner = ws?.role === 'owner'
- 
+
   return (
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage workspace settings and your account</p>
       </div>
- 
+
       {/* Profile Card */}
       <div className="card p-6 mb-5">
         <div className="flex items-center gap-2 mb-4">
@@ -121,7 +118,7 @@ export default function Settings() {
           </div>
         </div>
       </div>
- 
+
       {/* Workspace Settings */}
       <div className="card p-6 mb-5">
         <div className="flex items-center gap-2 mb-5">
@@ -146,7 +143,7 @@ export default function Settings() {
           )}
         </div>
       </div>
- 
+
       {/* All Workspaces */}
       <div className="card p-6 mb-5">
         <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">Your Workspaces</h2>
@@ -172,7 +169,7 @@ export default function Settings() {
           ))}
         </div>
       </div>
- 
+
       {/* Create New Workspace */}
       <div className="card p-6 mb-5">
         <div className="flex items-center gap-2 mb-4">
@@ -194,7 +191,7 @@ export default function Settings() {
           </button>
         </div>
       </div>
- 
+
       {/* Delete Workspace — owner only */}
       {isOwner && (
         <div className="card p-6 mb-5 border border-red-100 dark:border-red-900">
@@ -202,69 +199,60 @@ export default function Settings() {
             <AlertTriangle size={16} className="text-red-500" />
             <h2 className="text-base font-bold text-red-600 dark:text-red-400">Delete Workspace</h2>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Permanently delete <strong className="text-gray-700 dark:text-gray-300">{ws?.name}</strong> and all its projects, tasks, and members.
-            This action cannot be undone.
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            Permanently delete{' '}
+            <strong className="text-gray-700 dark:text-gray-300">{ws?.name}</strong>{' '}
+            and all its projects, tasks, and members. This action cannot be undone.
           </p>
-          {confirmWs && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-3">
-              <p className="text-sm text-red-700 dark:text-red-400 font-medium">
-                Are you sure? Click the button again to confirm permanent deletion.
-              </p>
-            </div>
-          )}
-          <div className="flex gap-3">
-            <button
-              onClick={handleDeleteWorkspace}
-              disabled={deleting}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all">
-              <Trash2 size={15} />
-              {deleting ? 'Deleting…' : confirmWs ? 'Yes, Delete Permanently' : 'Delete Workspace'}
-            </button>
-            {confirmWs && (
-              <button
-                onClick={() => setConfirmWs(false)}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-                Cancel
-              </button>
-            )}
-          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            Type{' '}
+            <strong className="text-gray-900 dark:text-white font-mono">{ws?.name}</strong>{' '}
+            to confirm:
+          </p>
+          <input
+            value={wsConfirmText}
+            onChange={e => setWsConfirmText(e.target.value)}
+            placeholder={ws?.name}
+            className="input-field mb-3"
+          />
+          <button
+            onClick={handleDeleteWorkspace}
+            disabled={deleting || wsConfirmText !== ws?.name}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            <Trash2 size={15} />
+            {deleting ? 'Deleting…' : 'Delete Workspace'}
+          </button>
         </div>
       )}
- 
+
       {/* Delete Account */}
       <div className="card p-6 border border-red-100 dark:border-red-900">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle size={16} className="text-red-500" />
           <h2 className="text-base font-bold text-red-600 dark:text-red-400">Delete Account</h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
           Permanently delete your account, all your workspaces, and all associated data.
           This action cannot be undone.
         </p>
-        {confirmAcct && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-3">
-            <p className="text-sm text-red-700 dark:text-red-400 font-medium">
-              This will delete everything. Click the button again to confirm.
-            </p>
-          </div>
-        )}
-        <div className="flex gap-3">
-          <button
-            onClick={handleDeleteAccount}
-            disabled={deletingAcct}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all">
-            <Trash2 size={15} />
-            {deletingAcct ? 'Deleting…' : confirmAcct ? 'Yes, Delete My Account' : 'Delete Account'}
-          </button>
-          {confirmAcct && (
-            <button
-              onClick={() => setConfirmAcct(false)}
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
-              Cancel
-            </button>
-          )}
-        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+          Type your email{' '}
+          <strong className="text-gray-900 dark:text-white font-mono">{user?.email}</strong>{' '}
+          to confirm:
+        </p>
+        <input
+          value={acctConfirmText}
+          onChange={e => setAcctConfirmText(e.target.value)}
+          placeholder={user?.email}
+          className="input-field mb-3"
+        />
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deletingAcct || acctConfirmText !== user?.email}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+          <Trash2 size={15} />
+          {deletingAcct ? 'Deleting…' : 'Delete Account'}
+        </button>
       </div>
     </div>
   )
