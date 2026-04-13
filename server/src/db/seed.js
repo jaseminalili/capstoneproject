@@ -22,7 +22,7 @@ async function seed() {
     await client.query('DELETE FROM workspaces')
     await client.query('DELETE FROM users')
 
-    const hash = await bcrypt.hash('password123', 12)
+    const hash = await bcrypt.hash('Password123!', 12)
 
     // ── Users ────────────────────────────────────────────────────────────────
     const users = {}

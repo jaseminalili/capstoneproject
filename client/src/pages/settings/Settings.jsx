@@ -1,34 +1,103 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Plus, User, Check, Trash2, AlertTriangle } from 'lucide-react'
+import { Building2, Plus, User, Check, Trash2, AlertTriangle, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { createWorkspace, updateWorkspace, deleteWorkspace, setCurrentWorkspace, logout } from '../../store/store'
+import { createWorkspace, updateWorkspace, deleteWorkspace, setCurrentWorkspace, logout, updateProfile } from '../../store/store'
 import { Avatar, RoleBadge } from '../../components/ui'
-
+import api from '../../api/axios'
+ 
+const AVATAR_COLORS = ['#3B82F6','#10B981','#8B5CF6','#F59E0B','#EF4444','#06B6D4','#F97316','#EC4899']
+ 
+const validatePassword = (pwd) => {
+  if (pwd.length < 8)             return 'Password must be at least 8 characters'
+  if (!/[A-Z]/.test(pwd))         return 'Password must contain at least one uppercase letter'
+  if (!/[a-z]/.test(pwd))         return 'Password must contain at least one lowercase letter'
+  if (!/[0-9]/.test(pwd))         return 'Password must contain at least one number'
+  if (!/[^A-Za-z0-9]/.test(pwd)) return 'Password must contain at least one special character'
+  return null
+}
+ 
+const PASSWORD_RULES = [
+  { test: p => p.length >= 8,           label: 'At least 8 characters' },
+  { test: p => /[A-Z]/.test(p),         label: 'One uppercase letter' },
+  { test: p => /[a-z]/.test(p),         label: 'One lowercase letter' },
+  { test: p => /[0-9]/.test(p),         label: 'One number' },
+  { test: p => /[^A-Za-z0-9]/.test(p), label: 'One special character (!@#$...)' },
+]
+ 
 export default function Settings() {
-  const dispatch  = useDispatch()
-  const navigate  = useNavigate()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { current: ws, list: workspaces } = useSelector(s => s.workspace)
   const { user } = useSelector(s => s.auth)
-
-  const [wsName,         setWsName]         = useState(ws?.name || '')
-  const [wsDesc,         setWsDesc]         = useState(ws?.description || '')
-  const [newWs,          setNewWs]          = useState('')
-  const [saving,         setSaving]         = useState(false)
-  const [creating,       setCreating]       = useState(false)
-  const [deleting,       setDeleting]       = useState(false)
-  const [deletingAcct,   setDeletingAcct]   = useState(false)
-  const [saved,          setSaved]          = useState(false)
-  const [wsConfirmText,  setWsConfirmText]  = useState('')
-  const [acctConfirmText,setAcctConfirmText]= useState('')
-
+ 
+  // Profile
+  const [profileName,   setProfileName]   = useState(user?.name || '')
+  const [previewColor,  setPreviewColor]  = useState(user?.color || '#3B82F6')
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [profileSaved,  setProfileSaved]  = useState(false)
+ 
+  // Password
+  const [currentPwd, setCurrentPwd] = useState('')
+  const [newPwd,     setNewPwd]     = useState('')
+  const [confirmPwd, setConfirmPwd] = useState('')
+  const [savingPwd,  setSavingPwd]  = useState(false)
+ 
+  // Workspace settings
+  const [wsName,   setWsName]   = useState(ws?.name || '')
+  const [wsDesc,   setWsDesc]   = useState(ws?.description || '')
+  const [newWs,    setNewWs]    = useState('')
+  const [saving,   setSaving]   = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [saved,    setSaved]    = useState(false)
+ 
+  // Delete
+  const [deleting,         setDeleting]         = useState(false)
+  const [deletingAcct,     setDeletingAcct]     = useState(false)
+  const [wsConfirmText,    setWsConfirmText]    = useState('')
+  const [acctConfirmText,  setAcctConfirmText]  = useState('')
+ 
   useEffect(() => {
     setWsName(ws?.name || '')
     setWsDesc(ws?.description || '')
     setWsConfirmText('')
   }, [ws?.id])
-
+ 
+  useEffect(() => {
+    setProfileName(user?.name || '')
+    setPreviewColor(user?.color || '#3B82F6')
+  }, [user?.id])
+ 
+  // ── Handlers ──────────────────────────────────────────────────────────────
+ 
+  const saveProfile = async () => {
+    if (!profileName.trim()) return
+    setSavingProfile(true)
+    try {
+      await dispatch(updateProfile({ name: profileName.trim(), color: previewColor })).unwrap()
+      toast.success('Profile updated.')
+      setProfileSaved(true)
+      setTimeout(() => setProfileSaved(false), 2500)
+    } catch (e) { toast.error(e.message) }
+    finally { setSavingProfile(false) }
+  }
+ 
+  const savePassword = async () => {
+    const pwdError = validatePassword(newPwd)
+    if (pwdError) { toast.error(pwdError); return }
+    if (newPwd !== confirmPwd) { toast.error('Passwords do not match.'); return }
+    setSavingPwd(true)
+    try {
+      await api.put('/auth/password', { currentPassword: currentPwd, newPassword: newPwd })
+      toast.success('Password changed successfully.')
+      setCurrentPwd('')
+      setNewPwd('')
+      setConfirmPwd('')
+    } catch (e) { toast.error(e.message || 'Current password is incorrect.') }
+    finally { setSavingPwd(false) }
+  }
+ 
   const saveWs = async () => {
     if (!wsName.trim()) return
     setSaving(true)
@@ -40,7 +109,7 @@ export default function Settings() {
     } catch (e) { toast.error(e.message) }
     finally { setSaving(false) }
   }
-
+ 
   const addWs = async () => {
     if (!newWs.trim()) return
     setCreating(true)
@@ -51,7 +120,7 @@ export default function Settings() {
     } catch (e) { toast.error(e.message) }
     finally { setCreating(false) }
   }
-
+ 
   const handleDeleteWorkspace = async () => {
     setDeleting(true)
     try {
@@ -67,11 +136,9 @@ export default function Settings() {
       }
     } catch (e) {
       toast.error(e.message || 'Failed to delete workspace.')
-    } finally {
-      setDeleting(false)
-    }
+    } finally { setDeleting(false) }
   }
-
+ 
   const handleDeleteAccount = async () => {
     setDeletingAcct(true)
     try {
@@ -84,30 +151,31 @@ export default function Settings() {
       toast.success('Account deleted.')
     } catch (e) {
       toast.error('Failed to delete account.')
-    } finally {
-      setDeletingAcct(false)
-    }
+    } finally { setDeletingAcct(false) }
   }
-
+ 
   const isOwner = ws?.role === 'owner'
-
+  const newPwdValid = PASSWORD_RULES.every(r => r.test(newPwd))
+ 
   return (
     <div className="p-6 sm:p-8 max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage workspace settings and your account</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your profile, workspace and account</p>
       </div>
-
-      {/* Profile Card */}
+ 
+      {/* ── Profile Card ─────────────────────────────────────────────────── */}
       <div className="card p-6 mb-5">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-5">
           <User size={16} className="text-gray-500 dark:text-gray-400" />
           <h2 className="text-base font-bold text-gray-900 dark:text-white">Your Profile</h2>
         </div>
-        <div className="flex items-center gap-4">
-          <Avatar user={user} size="xl" />
+ 
+        {/* Avatar preview */}
+        <div className="flex items-center gap-4 mb-5">
+          <Avatar user={{ ...user, name: profileName, color: previewColor }} size="xl" />
           <div>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">{user?.name}</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{profileName || user?.name}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Member since{' '}
@@ -117,9 +185,121 @@ export default function Settings() {
             </p>
           </div>
         </div>
+ 
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Display Name</label>
+            <input
+              value={profileName}
+              onChange={e => setProfileName(e.target.value)}
+              placeholder="Your full name"
+              className="input-field"
+            />
+          </div>
+ 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Avatar Color</label>
+            <div className="flex gap-2 flex-wrap">
+              {AVATAR_COLORS.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setPreviewColor(c)}
+                  className={`w-8 h-8 rounded-full transition-all duration-150 ${
+                    previewColor === c
+                      ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110'
+                      : 'hover:scale-105'
+                  }`}
+                  style={{ background: c }}
+                />
+              ))}
+            </div>
+          </div>
+ 
+          <button
+            onClick={saveProfile}
+            disabled={savingProfile || !profileName.trim()}
+            className="btn-primary">
+            {savingProfile ? 'Saving…' : profileSaved ? <><Check size={15} /> Saved!</> : 'Update Profile'}
+          </button>
+        </div>
       </div>
-
-      {/* Workspace Settings */}
+ 
+      {/* ── Change Password ───────────────────────────────────────────────── */}
+      <div className="card p-6 mb-5">
+        <div className="flex items-center gap-2 mb-5">
+          <Lock size={16} className="text-gray-500 dark:text-gray-400" />
+          <h2 className="text-base font-bold text-gray-900 dark:text-white">Change Password</h2>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Current Password</label>
+            <input
+              type="password"
+              value={currentPwd}
+              onChange={e => setCurrentPwd(e.target.value)}
+              placeholder="Enter current password"
+              className="input-field"
+            />
+          </div>
+ 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Password</label>
+            <input
+              type="password"
+              value={newPwd}
+              onChange={e => setNewPwd(e.target.value)}
+              placeholder="Create a strong password"
+              className="input-field"
+            />
+            {/* Password strength indicator */}
+            {newPwd && (
+              <div className="mt-2.5 space-y-1.5 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 border border-gray-100 dark:border-gray-600">
+                {PASSWORD_RULES.map(({ test, label }) => {
+                  const passed = test(newPwd)
+                  return (
+                    <div key={label} className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-colors ${passed ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-600'}`}>
+                        {passed && <Check size={9} className="text-white" strokeWidth={3} />}
+                      </div>
+                      <span className={`text-xs transition-colors ${passed ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                        {label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+ 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmPwd}
+              onChange={e => setConfirmPwd(e.target.value)}
+              placeholder="Repeat new password"
+              className="input-field"
+            />
+            {confirmPwd && newPwd !== confirmPwd && (
+              <p className="text-xs text-red-500 mt-1.5">Passwords do not match</p>
+            )}
+            {confirmPwd && newPwd === confirmPwd && newPwdValid && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 flex items-center gap-1">
+                <Check size={11} strokeWidth={3} /> Passwords match
+              </p>
+            )}
+          </div>
+ 
+          <button
+            onClick={savePassword}
+            disabled={savingPwd || !currentPwd || !newPwdValid || newPwd !== confirmPwd}
+            className="btn-primary disabled:opacity-50">
+            {savingPwd ? 'Saving…' : 'Change Password'}
+          </button>
+        </div>
+      </div>
+ 
+      {/* ── Workspace Settings ────────────────────────────────────────────── */}
       <div className="card p-6 mb-5">
         <div className="flex items-center gap-2 mb-5">
           <Building2 size={16} className="text-gray-500 dark:text-gray-400" />
@@ -143,8 +323,8 @@ export default function Settings() {
           )}
         </div>
       </div>
-
-      {/* All Workspaces */}
+ 
+      {/* ── All Workspaces ────────────────────────────────────────────────── */}
       <div className="card p-6 mb-5">
         <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">Your Workspaces</h2>
         <div className="space-y-2.5">
@@ -169,8 +349,8 @@ export default function Settings() {
           ))}
         </div>
       </div>
-
-      {/* Create New Workspace */}
+ 
+      {/* ── Create New Workspace ──────────────────────────────────────────── */}
       <div className="card p-6 mb-5">
         <div className="flex items-center gap-2 mb-4">
           <Plus size={16} className="text-gray-500 dark:text-gray-400" />
@@ -191,8 +371,8 @@ export default function Settings() {
           </button>
         </div>
       </div>
-
-      {/* Delete Workspace — owner only */}
+ 
+      {/* ── Delete Workspace — owner only ─────────────────────────────────── */}
       {isOwner && (
         <div className="card p-6 mb-5 border border-red-100 dark:border-red-900">
           <div className="flex items-center gap-2 mb-3">
@@ -224,8 +404,8 @@ export default function Settings() {
           </button>
         </div>
       )}
-
-      {/* Delete Account */}
+ 
+      {/* ── Delete Account ────────────────────────────────────────────────── */}
       <div className="card p-6 border border-red-100 dark:border-red-900">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle size={16} className="text-red-500" />
