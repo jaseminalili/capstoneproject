@@ -186,11 +186,16 @@ exports.deleteAccount = async (req, res, next) => {
   try {
     await client.query('BEGIN')
 
-    // Deleting the user cascades to:
-    // workspace_members, workspaces (if owner), notifications,
-    // task_comments, task_activities automatically via ON DELETE CASCADE
-    await client.query('DELETE FROM users WHERE id = $1', [req.user.id])
+    // Reassign reporter_id to assignee or set to another team member
+    // Simplest fix: delete tasks where this user is the only reporter
+    // OR just update reporter_id to NULL by first altering the constraint
+    // Easiest solution: delete all tasks reported by this user first
+    await client.query(
+      `DELETE FROM tasks WHERE reporter_id = $1`,
+      [req.user.id]
+    )
 
+    await client.query('DELETE FROM users WHERE id = $1', [req.user.id])
     await client.query('COMMIT')
     logger.info(`Account deleted: ${req.user.email}`)
     return R.success(res, null, 'Account deleted successfully.')
