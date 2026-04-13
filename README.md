@@ -327,7 +327,7 @@ The Express API is hosted on Vercel at:
 - `CLIENT_ORIGIN`: Same as `FRONTEND_URL`.
 - `SMTP_USER` / `SMTP_PASS`: For email notifications.
 
-### 2. Frontend (Vercel)
+### 2. Frontend  (Already Deployed)
 1. **GitHub Sync**: Push your code to a GitHub repository.
 2. **Import to Vercel**:
     - Select the repository.
