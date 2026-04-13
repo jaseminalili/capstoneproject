@@ -23,11 +23,11 @@ function InlineSelect({ value, options, onChange, renderBadge }) {
         {renderBadge(value)}
       </button>
       {open && (
-        <div className="absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1.5 z-40 min-w-[140px]"
+        <div className="absolute top-full mt-1 left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1.5 z-40 min-w-[140px]"
           onMouseLeave={() => setOpen(false)}>
           {options.map(o => (
             <button key={o.v} onClick={() => { onChange(o.v); setOpen(false) }}
-              className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 font-medium transition-colors ${value === o.v ? 'text-blue-600' : 'text-gray-700'}`}>
+              className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors ${value === o.v ? 'text-blue-600' : 'text-gray-700 dark:text-gray-300'}`}>
               {o.l}
             </button>
           ))}
@@ -89,8 +89,8 @@ export function TaskDetail() {
           className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
           <ArrowLeft size={16} /> Back to Project
         </button>
-        <span className="text-gray-300 hidden sm:inline">·</span>
-        <span className="text-sm text-gray-500 truncate hidden sm:inline">{task.title}</span>
+        <span className="text-gray-300 dark:text-gray-600 hidden sm:inline">·</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 truncate hidden sm:inline">{task.title}</span>
       </div>
  
       <div className="flex flex-1 overflow-hidden">
@@ -98,7 +98,7 @@ export function TaskDetail() {
         <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-100 dark:border-gray-700 min-w-0">
           <div className="flex-1 overflow-y-auto p-6">
             <div className="flex items-center gap-2 mb-6">
-              <MessageSquare size={18} className="text-gray-400" />
+              <MessageSquare size={18} className="text-gray-400 dark:text-gray-500" />
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">
                 Task Discussion ({task.comments?.length || 0})
               </h3>
@@ -106,7 +106,7 @@ export function TaskDetail() {
  
             {(!task.comments || task.comments.length === 0) ? (
               <div className="text-center py-16">
-                <MessageSquare size={36} className="mx-auto text-gray-200 mb-3" />
+                <MessageSquare size={36} className="mx-auto text-gray-200 dark:text-gray-600 mb-3" />
                 <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">No comments yet.</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Be the first to start the discussion.</p>
               </div>
@@ -117,7 +117,7 @@ export function TaskDetail() {
                   <div className="flex items-baseline gap-2 mb-1.5">
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">{c.user_name}</span>
                     <span className="text-xs text-gray-400 dark:text-gray-500">{fmtTime(c.created_at)}</span>
-                    {c.is_edited && <span className="text-xs text-gray-400 italic">(edited)</span>}
+                    {c.is_edited && <span className="text-xs text-gray-400 dark:text-gray-500 italic">(edited)</span>}
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                     {c.content}
@@ -157,11 +157,11 @@ export function TaskDetail() {
                 <input value={newTitle} onChange={e => setNewTitle(e.target.value)} autoFocus
                   className="input-field text-base font-bold flex-1" />
                 <button onClick={() => { if (newTitle.trim()) patch({ title: newTitle.trim() }); setEditTitle(false) }}
-                  className="p-2 bg-emerald-100 rounded-lg text-emerald-700 hover:bg-emerald-200 mt-0.5 shrink-0">
+                  className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 mt-0.5 shrink-0">
                   <Check size={14} />
                 </button>
                 <button onClick={() => setEditTitle(false)}
-                  className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 mt-0.5 shrink-0">
+                  className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 mt-0.5 shrink-0">
                   <X size={14} />
                 </button>
               </div>
@@ -169,7 +169,7 @@ export function TaskDetail() {
               <div className="flex items-start gap-2 group">
                 <h1 className="text-lg font-bold text-gray-900 dark:text-white flex-1 leading-snug">{task.title}</h1>
                 <button onClick={() => { setNewTitle(task.title); setEditTitle(true) }}
-                  className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-lg text-gray-400 transition-all shrink-0">
+                  className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-400 transition-all shrink-0">
                   <Pencil size={13} />
                 </button>
               </div>
@@ -185,14 +185,14 @@ export function TaskDetail() {
  
           {/* Description */}
           {task.description && (
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+            <div className="bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl p-3 text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
               {task.description}
             </div>
           )}
  
           {/* Assignee */}
           {task.assignee_name && (
-            <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
+            <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-gray-600">
               <Avatar user={{ name: task.assignee_name, avatar: task.assignee_avatar, color: task.assignee_color }} size="sm" />
               <div>
                 <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">Assignee</p>
@@ -203,7 +203,7 @@ export function TaskDetail() {
  
           {/* Reporter */}
           {task.reporter_name && (
-            <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
+            <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-gray-600">
               <Avatar user={{ name: task.reporter_name, avatar: task.reporter_avatar, color: task.reporter_color }} size="sm" />
               <div>
                 <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">Reporter</p>
@@ -215,7 +215,7 @@ export function TaskDetail() {
           {/* Due date */}
           {task.due_date && (
             <div className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-gray-600">
-              <Calendar size={14} className="text-gray-400 shrink-0" />
+              <Calendar size={14} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <span>Due: <strong>{fmtDate(task.due_date)}</strong></span>
             </div>
           )}
@@ -223,7 +223,7 @@ export function TaskDetail() {
           {/* Hours */}
           {(task.estimated_hours || task.actual_hours) && (
             <div className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-gray-600">
-              <Clock size={14} className="text-gray-400 shrink-0" />
+              <Clock size={14} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <span>
                 Est: <strong>{task.estimated_hours || 0}h</strong>
                 {task.actual_hours ? <> · Actual: <strong>{task.actual_hours}h</strong></> : null}
@@ -234,12 +234,12 @@ export function TaskDetail() {
           {/* Project Details */}
           {proj && (
             <>
-              <hr className="border-gray-100" />
+              <hr className="border-gray-100 dark:border-gray-700" />
               <div>
                 <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Project Details</h3>
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <Pencil size={12} className="text-gray-400 shrink-0" />
+                    <Pencil size={12} className="text-gray-400 dark:text-gray-500 shrink-0" />
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{proj.name}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -261,7 +261,7 @@ export function TaskDetail() {
           {/* Activity Log */}
           {task.activities?.length > 0 && (
             <>
-              <hr className="border-gray-100" />
+              <hr className="border-gray-100 dark:border-gray-700" />
               <div>
                 <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Recent Activity</h3>
                 <div className="space-y-2.5">
@@ -269,9 +269,9 @@ export function TaskDetail() {
                     <div key={a.id} className="flex items-start gap-2">
                       <Avatar user={{ name: a.user_name, avatar: a.user_avatar }} size="xs" className="shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-gray-600">
                           <strong>{a.user_name}</strong> {a.action}
-                          {a.field && <span className="text-gray-400"> · {a.field}</span>}
+                          {a.field && <span className="text-gray-400 dark:text-gray-500"> · {a.field}</span>}
                         </p>
                         <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{fmtTime(a.created_at)}</p>
                       </div>
