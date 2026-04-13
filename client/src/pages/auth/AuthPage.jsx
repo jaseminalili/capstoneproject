@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Eye, EyeOff, CheckSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { loginUser, registerUser, clearAuthError, fetchWorkspaces, fetchMyTasks } from '../../store/store'
-
+ 
 export default function AuthPage({ mode = 'login' }) {
   const dispatch   = useDispatch()
   const navigate   = useNavigate()
@@ -13,20 +13,30 @@ export default function AuthPage({ mode = 'login' }) {
   const [show, setShow]   = useState(false)
   const [form, setForm]   = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const isLogin = mode === 'login'
-
+ 
+  // Force light mode on auth pages — dark mode only works inside the app
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+  }, [])
+ 
   // If already logged in, redirect
   useEffect(() => {
     if (user) {
+      // Restore saved theme when entering the app
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark')
+      }
       const redirect = searchParams.get('redirect') || '/dashboard'
       navigate(redirect, { replace: true })
     }
   }, [user])
-
+ 
   const set = (k, v) => {
     setForm(f => ({ ...f, [k]: v }))
     if (error) dispatch(clearAuthError())
   }
-
+ 
   const validate = () => {
     if (!isLogin && !form.name.trim())       { toast.error('Full name is required.'); return false }
     if (!form.email.includes('@'))            { toast.error('Enter a valid email address.'); return false }
@@ -34,26 +44,30 @@ export default function AuthPage({ mode = 'login' }) {
     if (!isLogin && form.password !== form.confirmPassword) { toast.error('Passwords do not match.'); return false }
     return true
   }
-
+ 
   const submit = async e => {
     e.preventDefault()
     if (!validate()) return
-
+ 
     const action = isLogin
       ? loginUser({ email: form.email.trim(), password: form.password })
       : registerUser({ name: form.name.trim(), email: form.email.trim(), password: form.password })
-
+ 
     const res = await dispatch(action)
     if (!res.error) {
       toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!')
-      // Load workspaces and tasks after login
       dispatch(fetchWorkspaces())
       dispatch(fetchMyTasks())
+      // Restore saved theme when entering the app
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark')
+      }
       const redirect = searchParams.get('redirect') || '/dashboard'
       navigate(redirect, { replace: true })
     }
   }
-
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
       {/* Background glows */}
@@ -61,7 +75,7 @@ export default function AuthPage({ mode = 'login' }) {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl" />
       </div>
-
+ 
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -71,9 +85,9 @@ export default function AuthPage({ mode = 'login' }) {
           <h1 className="text-3xl font-bold text-white tracking-tight">TaskFlow</h1>
           <p className="text-blue-300 mt-1.5 text-sm">Professional Project Management</p>
         </div>
-
-        {/* Card */}
-        <div className="bg-white/95 backdrop-blur rounded-2xl shadow-2xl overflow-hidden">
+ 
+        {/* Card — always white */}
+        <div className="bg-white backdrop-blur rounded-2xl shadow-2xl overflow-hidden">
           {/* Tab switcher */}
           <div className="flex border-b border-gray-100">
             {[['login', 'Sign In'], ['register', 'Sign Up']].map(([m, label]) => (
@@ -87,7 +101,7 @@ export default function AuthPage({ mode = 'login' }) {
               </Link>
             ))}
           </div>
-
+ 
           <form onSubmit={submit} className="p-8 space-y-4">
             {!isLogin && (
               <div>
@@ -101,7 +115,7 @@ export default function AuthPage({ mode = 'login' }) {
                 />
               </div>
             )}
-
+ 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Email Address <span className="text-red-500">*</span>
@@ -112,7 +126,7 @@ export default function AuthPage({ mode = 'login' }) {
                 autoComplete="email" required
               />
             </div>
-
+ 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Password <span className="text-red-500">*</span>
@@ -132,7 +146,7 @@ export default function AuthPage({ mode = 'login' }) {
                 </button>
               </div>
             </div>
-
+ 
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -146,13 +160,13 @@ export default function AuthPage({ mode = 'login' }) {
                 />
               </div>
             )}
-
+ 
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center gap-2">
                 <span className="shrink-0">⚠</span> {error}
               </div>
             )}
-
+ 
             <button type="submit" disabled={loading}
               className="w-full btn-primary justify-center py-3 text-sm font-semibold mt-2">
               {loading ? (
@@ -162,7 +176,7 @@ export default function AuthPage({ mode = 'login' }) {
                 </span>
               ) : (isLogin ? 'Sign In' : 'Create Account')}
             </button>
-
+ 
             {isLogin && (
               <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 mt-2">
                 <p className="text-xs font-semibold text-slate-500 mb-1.5">Demo credentials</p>
@@ -174,7 +188,7 @@ export default function AuthPage({ mode = 'login' }) {
             )}
           </form>
         </div>
-
+ 
         <p className="text-center text-xs text-blue-400/60 mt-6">
           TaskFlow — Professional Project Management Platform
         </p>
