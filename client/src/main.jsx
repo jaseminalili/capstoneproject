@@ -6,6 +6,12 @@ import store from './store/store'
 import App from './App'
 import './index.css'
 
+// Restore dark mode theme from localStorage on page load
+const savedTheme = localStorage.getItem('theme')
+if (savedTheme === 'dark') {
+  document.documentElement.classList.add('dark')
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>

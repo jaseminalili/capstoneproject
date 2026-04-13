@@ -3,7 +3,8 @@ import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   LayoutDashboard, FolderKanban, Users, Settings, CheckSquare,
-  ChevronDown, ChevronRight, Plus, LogOut, Search, Bell, Circle, Menu, X
+  ChevronDown, ChevronRight, Plus, LogOut, Search, Bell, Circle, Menu, X,
+  Sun, Moon
 } from 'lucide-react'
 import {
   logout, setCurrentWorkspace, fetchProjects, fetchMyTasks, fetchTeam,
@@ -12,11 +13,9 @@ import {
 import api from '../../api/axios'
 import { Avatar } from '../ui'
 
-// ── Priority dot colors ────────────────────────────────────────────────────────
 const PRIORITY_DOT = { critical:'bg-red-600', high:'bg-orange-500', medium:'bg-amber-400', low:'bg-green-500' }
 const STATUS_DOT   = { active:'text-emerald-500', planning:'text-blue-400', completed:'text-gray-400', on_hold:'text-amber-400', cancelled:'text-red-400' }
 
-// ── Sidebar ────────────────────────────────────────────────────────────────────
 function Sidebar({ mobile, onClose }) {
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
@@ -160,18 +159,18 @@ function Sidebar({ mobile, onClose }) {
       {/* User Profile */}
       {user && (
         <div className="p-3 border-t border-gray-100">
-         <div className="flex items-center gap-2.5 px-1 py-1">
-  <Avatar user={user} size="sm" />
-  <div className="flex-1 min-w-0">
-    <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
-    <p className="text-xs text-gray-400 truncate">{user.email}</p>
-  </div>
-</div>
-<button onClick={() => { dispatch(logout()); navigate('/login') }}
-  className="w-full flex items-center justify-center gap-2 px-3 py-2 mt-1 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
-  <LogOut size={16} />
-  Sign Out
-             </button>
+          <div className="flex items-center gap-2.5 px-1 py-1">
+            <Avatar user={user} size="sm" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+            </div>
+          </div>
+          <button onClick={() => { dispatch(logout()); navigate('/login') }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 mt-1 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
+            <LogOut size={16} />
+            Sign Out
+          </button>
         </div>
       )}
     </div>
@@ -180,23 +179,34 @@ function Sidebar({ mobile, onClose }) {
 
 // ── Top Bar ────────────────────────────────────────────────────────────────────
 function TopBar({ onMenuClick }) {
+  const [dark, setDark] = useState(
+    document.documentElement.classList.contains('dark')
+  )
+
+  const toggleDark = () => {
+    document.documentElement.classList.toggle('dark')
+    const isDark = document.documentElement.classList.contains('dark')
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+    setDark(isDark)
+  }
+
   const navigate  = useNavigate()
   const dispatch  = useDispatch()
   const { current: ws } = useSelector(s => s.workspace)
   const { user }  = useSelector(s => s.auth)
   const { list: notifications } = useSelector(s => s.notifications)
-  
+
   const [q, setQ] = useState('')
   const [results, setResults] = useState({ projects: [], tasks: [] })
   const [open, setOpen] = useState(false)
   const [notifyOpen, setNotifyOpen] = useState(false)
   const [searching, setSearching] = useState(false)
-  
+
   const searchRef = useRef(null)
   const notifyRef = useRef(null)
 
   useEffect(() => {
-    const h = e => { 
+    const h = e => {
       if (searchRef.current && !searchRef.current.contains(e.target)) setOpen(false)
       if (notifyRef.current && !notifyRef.current.contains(e.target)) setNotifyOpen(false)
     }
@@ -245,13 +255,13 @@ function TopBar({ onMenuClick }) {
             className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border-blue-500 transition-all placeholder:text-gray-400"
           />
         </div>
-        
+
         {open && q.trim().length > 1 && (
-          <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-2xl py-2 overflow-hidden z-50">
             {searching ? (
-               <div className="px-4 py-3 text-xs text-gray-400 italic">Searching...</div>
+              <div className="px-4 py-3 text-xs text-gray-400 italic">Searching...</div>
             ) : results.projects.length === 0 && results.tasks.length === 0 ? (
-               <div className="px-4 py-3 text-xs text-gray-400 italic">No results found for "{q}"</div>
+              <div className="px-4 py-3 text-xs text-gray-400 italic">No results found for "{q}"</div>
             ) : (
               <>
                 {results.projects.length > 0 && (
@@ -288,6 +298,15 @@ function TopBar({ onMenuClick }) {
       </div>
 
       <div className="flex items-center gap-3 ml-auto">
+
+        {/* Dark mode toggle */}
+        <button
+          onClick={toggleDark}
+          className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+          title={dark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {dark ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
         {/* Notifications */}
         <div className="relative" ref={notifyRef}>
           <button onClick={() => setNotifyOpen(!notifyOpen)}
@@ -301,7 +320,7 @@ function TopBar({ onMenuClick }) {
           </button>
 
           {notifyOpen && (
-            <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <span className="text-sm font-bold text-gray-900">Notifications</span>
                 {unreadCount > 0 && (
@@ -320,7 +339,7 @@ function TopBar({ onMenuClick }) {
                   </div>
                 ) : (
                   notifications.map(n => (
-                    <button key={n.id} onClick={() => { 
+                    <button key={n.id} onClick={() => {
                       if (!n.is_read) dispatch(markAsRead(n.id))
                       if (n.link) navigate(n.link)
                       setNotifyOpen(false)
@@ -365,12 +384,10 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:w-64 lg:shrink-0">
         <Sidebar />
       </div>
 
-      {/* Mobile sidebar */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="fixed inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
