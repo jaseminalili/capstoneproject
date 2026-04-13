@@ -7,14 +7,14 @@ import {
   fetchTaskDetail, updateTask, addComment, clearCurrentTask, patchProjectProgress
 } from '../../store/store'
 import { Avatar, StatusBadge, PriorityBadge, TypeBadge, ProgressBar, PageSpinner } from '../../components/ui'
-
+ 
 const STATUS_OPTS   = [{v:'backlog',l:'Backlog'},{v:'todo',l:'Todo'},{v:'in_progress',l:'In Progress'},{v:'in_review',l:'In Review'},{v:'done',l:'Done'},{v:'cancelled',l:'Cancelled'}]
 const PRIORITY_OPTS = [{v:'critical',l:'Critical'},{v:'high',l:'High'},{v:'medium',l:'Medium'},{v:'low',l:'Low'}]
 const TYPE_OPTS     = [{v:'task',l:'Task'},{v:'bug',l:'Bug'},{v:'feature',l:'Feature'},{v:'improvement',l:'Improvement'},{v:'story',l:'Story'},{v:'epic',l:'Epic'}]
-
+ 
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'
 const fmtTime = d => d ? new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''
-
+ 
 function InlineSelect({ value, options, onChange, renderBadge }) {
   const [open, setOpen] = useState(false)
   return (
@@ -36,7 +36,7 @@ function InlineSelect({ value, options, onChange, renderBadge }) {
     </div>
   )
 }
-
+ 
 export function TaskDetail() {
   const { id }       = useParams()
   const [params]     = useSearchParams()
@@ -48,12 +48,12 @@ export function TaskDetail() {
   const [posting, setPosting]     = useState(false)
   const [editTitle, setEditTitle] = useState(false)
   const [newTitle,  setNewTitle]  = useState('')
-
+ 
   useEffect(() => {
     if (id) dispatch(fetchTaskDetail(id))
     return () => dispatch(clearCurrentTask())
   }, [id])
-
+ 
   const patch = async data => {
     if (!task) return
     try {
@@ -63,7 +63,7 @@ export function TaskDetail() {
       }
     } catch (e) { toast.error(e.message) }
   }
-
+ 
   const postComment = async e => {
     e.preventDefault()
     if (!comment.trim()) return
@@ -74,61 +74,61 @@ export function TaskDetail() {
     } catch (e) { toast.error(e.message) }
     finally { setPosting(false) }
   }
-
+ 
   const backUrl = params.get('projectId') ? `/projects/${params.get('projectId')}` : '/projects'
-
+ 
   if (loading || !task) return <PageSpinner />
-
+ 
   const proj = task.project
-
+ 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 56px)' }}>
       {/* Back bar */}
-      <div className="px-6 py-3 border-b border-gray-200 bg-white shrink-0 flex items-center gap-3">
+      <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 flex items-center gap-3">
         <button onClick={() => navigate(backUrl)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors">
+          className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
           <ArrowLeft size={16} /> Back to Project
         </button>
         <span className="text-gray-300 hidden sm:inline">·</span>
         <span className="text-sm text-gray-500 truncate hidden sm:inline">{task.title}</span>
       </div>
-
+ 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Left: Discussion ─────────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-100 min-w-0">
+        <div className="flex-1 flex flex-col overflow-hidden border-r border-gray-100 dark:border-gray-700 min-w-0">
           <div className="flex-1 overflow-y-auto p-6">
             <div className="flex items-center gap-2 mb-6">
               <MessageSquare size={18} className="text-gray-400" />
-              <h3 className="text-sm font-bold text-gray-700">
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">
                 Task Discussion ({task.comments?.length || 0})
               </h3>
             </div>
-
+ 
             {(!task.comments || task.comments.length === 0) ? (
               <div className="text-center py-16">
                 <MessageSquare size={36} className="mx-auto text-gray-200 mb-3" />
-                <p className="text-sm text-gray-400 font-medium">No comments yet.</p>
-                <p className="text-xs text-gray-400 mt-1">Be the first to start the discussion.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 font-medium">No comments yet.</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Be the first to start the discussion.</p>
               </div>
             ) : task.comments.map(c => (
               <div key={c.id} className="flex gap-3.5 mb-6">
                 <Avatar user={{ name: c.user_name, avatar: c.user_avatar, color: c.user_color }} size="sm" className="shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <div className="flex items-baseline gap-2 mb-1.5">
-                    <span className="text-sm font-semibold text-gray-900">{c.user_name}</span>
-                    <span className="text-xs text-gray-400">{fmtTime(c.created_at)}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{c.user_name}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">{fmtTime(c.created_at)}</span>
                     {c.is_edited && <span className="text-xs text-gray-400 italic">(edited)</span>}
                   </div>
-                  <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  <div className="bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                     {c.content}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-
+ 
           {/* Comment input */}
-          <div className="p-5 border-t border-gray-100 bg-white shrink-0">
+          <div className="p-5 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0">
             <form onSubmit={postComment} className="flex gap-3">
               <Avatar user={user} size="sm" className="shrink-0 mt-0.5" />
               <div className="flex-1 relative">
@@ -147,9 +147,9 @@ export function TaskDetail() {
             </form>
           </div>
         </div>
-
+ 
         {/* ── Right: Task Info ──────────────────────────────────────────────── */}
-        <div className="w-80 shrink-0 overflow-y-auto bg-white p-5 space-y-4">
+        <div className="w-80 shrink-0 overflow-y-auto bg-white dark:bg-gray-800 p-5 space-y-4">
           {/* Title */}
           <div>
             {editTitle ? (
@@ -167,7 +167,7 @@ export function TaskDetail() {
               </div>
             ) : (
               <div className="flex items-start gap-2 group">
-                <h1 className="text-lg font-bold text-gray-900 flex-1 leading-snug">{task.title}</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white flex-1 leading-snug">{task.title}</h1>
                 <button onClick={() => { setNewTitle(task.title); setEditTitle(true) }}
                   className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-lg text-gray-400 transition-all shrink-0">
                   <Pencil size={13} />
@@ -175,54 +175,54 @@ export function TaskDetail() {
               </div>
             )}
           </div>
-
+ 
           {/* Clickable badges */}
           <div className="flex flex-wrap gap-2">
             <InlineSelect value={task.status}   options={STATUS_OPTS}   onChange={v => patch({ status: v })}   renderBadge={v => <StatusBadge value={v} />} />
             <InlineSelect value={task.type}     options={TYPE_OPTS}     onChange={v => patch({ type: v })}     renderBadge={v => <TypeBadge value={v} />} />
             <InlineSelect value={task.priority} options={PRIORITY_OPTS} onChange={v => patch({ priority: v })} renderBadge={v => <PriorityBadge value={v} />} />
           </div>
-
+ 
           {/* Description */}
           {task.description && (
             <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
               {task.description}
             </div>
           )}
-
+ 
           {/* Assignee */}
           {task.assignee_name && (
             <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
               <Avatar user={{ name: task.assignee_name, avatar: task.assignee_avatar, color: task.assignee_color }} size="sm" />
               <div>
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Assignee</p>
-                <p className="text-sm font-semibold text-gray-800">{task.assignee_name}</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">Assignee</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{task.assignee_name}</p>
               </div>
             </div>
           )}
-
+ 
           {/* Reporter */}
           {task.reporter_name && (
             <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
               <Avatar user={{ name: task.reporter_name, avatar: task.reporter_avatar, color: task.reporter_color }} size="sm" />
               <div>
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Reporter</p>
-                <p className="text-sm font-semibold text-gray-800">{task.reporter_name}</p>
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">Reporter</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{task.reporter_name}</p>
               </div>
             </div>
           )}
-
+ 
           {/* Due date */}
           {task.due_date && (
-            <div className="flex items-center gap-2.5 text-sm text-gray-700 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
+            <div className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-gray-600">
               <Calendar size={14} className="text-gray-400 shrink-0" />
               <span>Due: <strong>{fmtDate(task.due_date)}</strong></span>
             </div>
           )}
-
+ 
           {/* Hours */}
           {(task.estimated_hours || task.actual_hours) && (
-            <div className="flex items-center gap-2.5 text-sm text-gray-700 bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-100">
+            <div className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-xl px-3 py-2.5 border border-gray-100 dark:border-gray-600">
               <Clock size={14} className="text-gray-400 shrink-0" />
               <span>
                 Est: <strong>{task.estimated_hours || 0}h</strong>
@@ -230,50 +230,50 @@ export function TaskDetail() {
               </span>
             </div>
           )}
-
+ 
           {/* Project Details */}
           {proj && (
             <>
               <hr className="border-gray-100" />
               <div>
-                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Project Details</h3>
+                <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Project Details</h3>
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Pencil size={12} className="text-gray-400 shrink-0" />
-                    <span className="text-sm font-semibold text-gray-800 truncate">{proj.name}</span>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{proj.name}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <StatusBadge value={proj.status} />
                     <PriorityBadge value={proj.priority} />
                   </div>
                   <div className="text-xs text-gray-500">
-                    Progress: <strong className="text-gray-700">{proj.progress || 0}%</strong>
+                    Progress: <strong className="text-gray-700 dark:text-gray-300">{proj.progress || 0}%</strong>
                   </div>
                   <ProgressBar value={proj.progress || 0} height={4} />
                   {proj.end_date && (
-                    <p className="text-xs text-gray-400">Due: {fmtDate(proj.end_date)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Due: {fmtDate(proj.end_date)}</p>
                   )}
                 </div>
               </div>
             </>
           )}
-
+ 
           {/* Activity Log */}
           {task.activities?.length > 0 && (
             <>
               <hr className="border-gray-100" />
               <div>
-                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Recent Activity</h3>
+                <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Recent Activity</h3>
                 <div className="space-y-2.5">
                   {task.activities.map(a => (
                     <div key={a.id} className="flex items-start gap-2">
                       <Avatar user={{ name: a.user_name, avatar: a.user_avatar }} size="xs" className="shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
                           <strong>{a.user_name}</strong> {a.action}
                           {a.field && <span className="text-gray-400"> · {a.field}</span>}
                         </p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{fmtTime(a.created_at)}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{fmtTime(a.created_at)}</p>
                       </div>
                     </div>
                   ))}
@@ -286,5 +286,5 @@ export function TaskDetail() {
     </div>
   )
 }
-
+ 
 export default TaskDetail
