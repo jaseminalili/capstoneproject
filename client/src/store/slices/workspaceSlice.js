@@ -4,12 +4,22 @@ import api from '../../api/axios'
 export const fetchWorkspaces = createAsyncThunk('ws/list',   async () => api.get('/workspaces'))
 export const createWorkspace = createAsyncThunk('ws/create', async (data) => api.post('/workspaces', data))
 export const updateWorkspace = createAsyncThunk('ws/update', async ({ id, data }) => api.put(`/workspaces/${id}`, data))
+export const deleteWorkspace = createAsyncThunk('ws/delete', async (id, { rejectWithValue }) => {
+  try {
+    await api.delete(`/workspaces/${id}`)
+    return id
+  } catch (e) {
+    return rejectWithValue(e.message)
+  }
+})
 
-const getSavedWorkspace = () => { try { return JSON.parse(localStorage.getItem('tf_workspace')) } catch { return null } }
+const getSavedWorkspace = () => {
+  try { return JSON.parse(localStorage.getItem('tf_workspace')) } catch { return null }
+}
 
 const wsSlice = createSlice({
   name: 'workspace',
-  initialState: { list: [], current: getSavedWorkspace(), loading: false },
+  initialState: { list: [], current: getSavedWorkspace(), loading: false, error: '' },
   reducers: {
     setCurrentWorkspace(s, { payload }) {
       s.current = payload
@@ -33,6 +43,15 @@ const wsSlice = createSlice({
       s.list = s.list.map(w => w.id === a.payload.data.id ? a.payload.data : w)
       if (s.current?.id === a.payload.data.id) s.current = { ...s.current, ...a.payload.data }
     })
+    b.addCase(deleteWorkspace.fulfilled, (s, a) => {
+      s.list = s.list.filter(w => w.id !== a.payload)
+      if (s.current?.id === a.payload) {
+        s.current = s.list[0] || null
+        if (s.list[0]) localStorage.setItem('tf_workspace', JSON.stringify(s.list[0]))
+        else localStorage.removeItem('tf_workspace')
+      }
+    })
+    b.addCase(deleteWorkspace.rejected, (s, a) => { s.error = a.payload })
   },
 })
 

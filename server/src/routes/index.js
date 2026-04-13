@@ -1,5 +1,5 @@
 const { Router } = require('express')
-const { body, param, query: qv } = require('express-validator')
+const { body } = require('express-validator')
 
 const { authenticate, requireWorkspaceRole, requireProjectMember } = require('../middleware/auth')
 const { validate } = require('../middleware/errorHandler')
@@ -30,8 +30,8 @@ router.post('/auth/login',
   auth.login
 )
 
-router.get('/auth/me',         authenticate, auth.me)
-router.put('/auth/profile',    authenticate, auth.updateProfile)
+router.get('/auth/me',      authenticate, auth.me)
+router.put('/auth/profile', authenticate, auth.updateProfile)
 router.put('/auth/password',
   authenticate,
   body('currentPassword').notEmpty(),
@@ -39,19 +39,20 @@ router.put('/auth/password',
   validate,
   auth.changePassword
 )
+router.delete('/auth/account', authenticate, auth.deleteAccount)
 
 // ── Invitations (public) ──────────────────────────────────────────────────────
 router.get('/invite/info',    team.getInviteInfo)
 router.post('/invite/accept', authenticate, team.acceptInvite)
 
 // ── Workspaces ────────────────────────────────────────────────────────────────
-router.get('/workspaces',             authenticate, ws.list)
-router.post('/workspaces',            authenticate, ws.create)
-router.get('/workspaces/:workspaceId',          authenticate, requireWorkspaceRole('member'), ws.get)
-router.put('/workspaces/:workspaceId',          authenticate, requireWorkspaceRole('owner'),  ws.update)
-router.delete('/workspaces/:workspaceId',       authenticate, requireWorkspaceRole('owner'),  ws.delete)
-router.get('/workspaces/:workspaceId/stats',    authenticate, requireWorkspaceRole('member'), ws.getStats)
-router.get('/workspaces/:workspaceId/users',    authenticate, requireWorkspaceRole('member'), team.getWorkspaceUsers)
+router.get('/workspaces',                    authenticate, ws.list)
+router.post('/workspaces',                   authenticate, ws.create)
+router.get('/workspaces/:workspaceId',       authenticate, requireWorkspaceRole('member'), ws.get)
+router.put('/workspaces/:workspaceId',       authenticate, requireWorkspaceRole('owner'),  ws.update)
+router.delete('/workspaces/:workspaceId',    authenticate, requireWorkspaceRole('owner'),  ws.delete)
+router.get('/workspaces/:workspaceId/stats', authenticate, requireWorkspaceRole('member'), ws.getStats)
+router.get('/workspaces/:workspaceId/users', authenticate, requireWorkspaceRole('member'), team.getWorkspaceUsers)
 
 // ── Team ──────────────────────────────────────────────────────────────────────
 router.get('/workspaces/:workspaceId/members',
@@ -84,40 +85,43 @@ router.post('/workspaces/:workspaceId/projects',
   validate,
   proj.create)
 
-router.get('/projects/:id',    authenticate, requireProjectMember, proj.getOne)
+router.get('/projects/:id',       authenticate, requireProjectMember, proj.getOne)
 router.get('/projects/:id/stats', authenticate, requireProjectMember, proj.getProjectStats)
-router.put('/projects/:id',    authenticate, requireProjectMember, proj.update)
-router.delete('/projects/:id', authenticate, proj.delete)
+router.put('/projects/:id',       authenticate, requireProjectMember, proj.update)
+router.delete('/projects/:id',    authenticate, proj.delete)
 
 // ── Tasks ─────────────────────────────────────────────────────────────────────
-router.get('/tasks/my',        authenticate, task.getMyTasks)
-router.get('/tasks/:id',       authenticate, task.getOne)
-router.put('/tasks/:id',       authenticate, task.update)
-router.delete('/tasks/:id',    authenticate, task.delete)
+router.get('/tasks/my',     authenticate, task.getMyTasks)
+router.get('/tasks/:id',    authenticate, task.getOne)
+router.put('/tasks/:id',    authenticate, task.update)
+router.delete('/tasks/:id', authenticate, task.delete)
 
-router.get('/projects/:projectId/tasks',  authenticate, requireProjectMember, task.listForProject)
+router.get('/projects/:projectId/tasks',
+  authenticate, requireProjectMember, task.listForProject)
+
 router.post('/projects/:projectId/tasks',
   authenticate, requireProjectMember,
   body('title').trim().notEmpty().isLength({ max:300 }),
   validate,
   task.create)
 
-// Comments
+// ── Comments ──────────────────────────────────────────────────────────────────
 router.post('/tasks/:id/comments',
   authenticate,
-  body('content').trim().notEmpty().isLength({ max: 5000 }),
+  body('content').trim().notEmpty().isLength({ max:5000 }),
   validate,
   task.addComment)
 
-router.put('/tasks/:id/comments/:commentId',  authenticate, task.updateComment)
+router.put('/tasks/:id/comments/:commentId',    authenticate, task.updateComment)
 router.delete('/tasks/:id/comments/:commentId', authenticate, task.deleteComment)
 
 // ── Search ────────────────────────────────────────────────────────────────────
-router.get('/workspaces/:workspaceId/search', authenticate, requireWorkspaceRole('member'), search.search)
+router.get('/workspaces/:workspaceId/search',
+  authenticate, requireWorkspaceRole('member'), search.search)
 
 // ── Notifications ─────────────────────────────────────────────────────────────
-router.get('/notifications',        authenticate, notify.list)
-router.patch('/notifications/read', authenticate, notify.markAllAsRead)
+router.get('/notifications',            authenticate, notify.list)
+router.patch('/notifications/read',     authenticate, notify.markAllAsRead)
 router.patch('/notifications/:id/read', authenticate, notify.markAsRead)
 
 module.exports = router

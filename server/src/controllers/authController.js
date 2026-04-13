@@ -25,14 +25,13 @@ function makeAvatar(name) {
 exports.register = async (req, res, next) => {
   const { name, email, password } = req.body
   try {
-    // Check duplicate
     const exists = await query('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email])
     if (exists.rows.length) return R.conflict(res, 'An account with this email already exists.')
 
-    const count    = (await query('SELECT COUNT(*) FROM users')).rows[0].count
-    const color    = AVATAR_COLORS[Number(count) % AVATAR_COLORS.length]
-    const avatar   = makeAvatar(name)
-    const hash     = await bcrypt.hash(password, 12)
+    const count  = (await query('SELECT COUNT(*) FROM users')).rows[0].count
+    const color  = AVATAR_COLORS[Number(count) % AVATAR_COLORS.length]
+    const avatar = makeAvatar(name)
+    const hash   = await bcrypt.hash(password, 12)
 
     const client = await require('../db/pool').getClient()
     try {
@@ -44,7 +43,6 @@ exports.register = async (req, res, next) => {
         [name.trim(), email.toLowerCase(), hash, avatar, color]
       )).rows[0]
 
-      // Auto-create personal workspace
       const wsRow = (await client.query(
         `INSERT INTO workspaces(name,description,owner_id) VALUES($1,$2,$3) RETURNING id,name`,
         [`${name.trim()}'s Workspace`, 'Personal workspace', userRow.id]
@@ -86,10 +84,8 @@ exports.login = async (req, res, next) => {
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) return R.unauthorized(res, 'Invalid email or password.')
 
-    // Update last login
     await query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id])
 
-    // Fetch workspaces
     const wsResult = await query(
       `SELECT w.id, w.name, w.description, w.owner_id, wm.role, w.created_at
        FROM workspaces w
@@ -179,5 +175,29 @@ exports.changePassword = async (req, res, next) => {
     return R.success(res, null, 'Password changed successfully.')
   } catch (err) {
     next(err)
+  }
+}
+
+/**
+ * DELETE /api/auth/account
+ */
+exports.deleteAccount = async (req, res, next) => {
+  const client = await require('../db/pool').getClient()
+  try {
+    await client.query('BEGIN')
+
+    // Deleting the user cascades to:
+    // workspace_members, workspaces (if owner), notifications,
+    // task_comments, task_activities automatically via ON DELETE CASCADE
+    await client.query('DELETE FROM users WHERE id = $1', [req.user.id])
+
+    await client.query('COMMIT')
+    logger.info(`Account deleted: ${req.user.email}`)
+    return R.success(res, null, 'Account deleted successfully.')
+  } catch (err) {
+    await client.query('ROLLBACK')
+    next(err)
+  } finally {
+    client.release()
   }
 }
