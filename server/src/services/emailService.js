@@ -244,7 +244,8 @@ async function sendWorkspaceInvitation(options) {
 
   try {
     const info = await getTransporter().sendMail({
-      from:    `"${config.email.fromName}" <${config.email.fromAddress}>`,
+// FIXED
+      from: `"${options.inviterName} via TaskFlow" <${config.email.fromAddress}>`,
       to,
       subject: `You've been invited to join ${workspaceName} on TaskFlow`,
       html,
