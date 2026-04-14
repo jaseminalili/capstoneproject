@@ -2,18 +2,20 @@ require('dotenv').config()
 const bcrypt = require('bcryptjs')
 const { Pool } = require('pg')
 const config = require('../config')
-
+ 
 const pool = new Pool(config.db)
-
+ 
 async function seed() {
   const client = await pool.connect()
   console.log('🌱  Seeding TaskFlow database…')
   try {
     await client.query('BEGIN')
-
-    // ── Clean existing data ──────────────────────────────────────────────────
+ 
+    // ── Clean existing data (correct order — children before parents) ────────
     await client.query('DELETE FROM task_activities')
     await client.query('DELETE FROM task_comments')
+    await client.query('DELETE FROM notifications')
+    await client.query('DELETE FROM password_reset_tokens')
     await client.query('DELETE FROM tasks')
     await client.query('DELETE FROM project_members')
     await client.query('DELETE FROM projects')
@@ -21,9 +23,9 @@ async function seed() {
     await client.query('DELETE FROM workspace_invitations')
     await client.query('DELETE FROM workspaces')
     await client.query('DELETE FROM users')
-
+ 
     const hash = await bcrypt.hash('Password123!', 12)
-
+ 
     // ── Users ────────────────────────────────────────────────────────────────
     const users = {}
     const userData = [
@@ -40,40 +42,43 @@ async function seed() {
       )
       users[u.email.split('@')[0]] = r.rows[0].id
     }
-
+ 
     // ── Workspace ────────────────────────────────────────────────────────────
     const ws = (await client.query(
       `INSERT INTO workspaces(name,description,owner_id) VALUES($1,$2,$3) RETURNING id`,
       ['Cloud Ops Hub', 'DevOps and cloud infrastructure workspace', users.oliver]
     )).rows[0].id
-
+ 
     // Workspace members
     const memberRoles = [
       [users.oliver, 'owner'], [users.alex, 'admin'], [users.sarah, 'admin'],
       [users.john, 'member'], [users.maria, 'member'],
     ]
     for (const [uid, role] of memberRoles)
-      await client.query(`INSERT INTO workspace_members(workspace_id,user_id,role) VALUES($1,$2,$3)`, [ws, uid, role])
-
+      await client.query(
+        `INSERT INTO workspace_members(workspace_id,user_id,role) VALUES($1,$2,$3)`,
+        [ws, uid, role]
+      )
+ 
     // ── Projects ─────────────────────────────────────────────────────────────
     const p1 = (await client.query(
       `INSERT INTO projects(workspace_id,name,description,status,priority,start_date,end_date,lead_id,created_by)
        VALUES($1,$2,$3,'active','high','2025-10-01','2025-12-31',$4,$5) RETURNING id`,
       [ws, 'Kubernetes Migration', 'Migrate monolithic application infrastructure to Kubernetes for improved scalability and reliability.', users.oliver, users.oliver]
     )).rows[0].id
-
+ 
     const p2 = (await client.query(
       `INSERT INTO projects(workspace_id,name,description,status,priority,start_date,end_date,lead_id,created_by)
        VALUES($1,$2,$3,'active','medium','2025-11-01','2026-03-31',$4,$5) RETURNING id`,
       [ws, 'Automated Regression Suite', 'Build a Selenium + Playwright lightweight hybrid test framework for automated regression testing across all services.', users.alex, users.alex]
     )).rows[0].id
-
+ 
     const p3 = (await client.query(
       `INSERT INTO projects(workspace_id,name,description,status,priority,start_date,end_date,lead_id,created_by)
        VALUES($1,$2,$3,'planning','medium','2026-01-15','2026-06-30',$4,$5) RETURNING id`,
       [ws, 'API Gateway Redesign', 'Redesign the API gateway for better performance, security and developer experience.', users.sarah, users.oliver]
     )).rows[0].id
-
+ 
     // Project members
     const projMembers = [
       [p1, users.oliver], [p1, users.alex], [p1, users.john],
@@ -81,8 +86,11 @@ async function seed() {
       [p3, users.sarah], [p3, users.oliver], [p3, users.maria],
     ]
     for (const [pid, uid] of projMembers)
-      await client.query(`INSERT INTO project_members(project_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING`, [pid, uid])
-
+      await client.query(
+        `INSERT INTO project_members(project_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING`,
+        [pid, uid]
+      )
+ 
     // ── Tasks ─────────────────────────────────────────────────────────────────
     const taskData = [
       // Project 1
@@ -101,7 +109,7 @@ async function seed() {
       { pid: p3, title: 'API Design Documentation',    desc: 'Document new API gateway architecture, endpoints and authentication flow.',   status: 'in_progress', priority: 'medium', type: 'task',        assignee: users.sarah,  reporter: users.sarah,  due: '2026-02-01' },
       { pid: p3, title: 'OAuth 2.0 Integration',       desc: 'Implement OAuth 2.0 with PKCE for third-party authentication.',               status: 'backlog',     priority: 'high',   type: 'feature',     assignee: users.oliver, reporter: users.sarah,  due: '2026-03-15' },
     ]
-
+ 
     for (const [i, t] of taskData.entries()) {
       await client.query(
         `INSERT INTO tasks(project_id,title,description,status,priority,type,assignee_id,reporter_id,due_date,position)
@@ -109,23 +117,24 @@ async function seed() {
         [t.pid, t.title, t.desc, t.status, t.priority, t.type, t.assignee, t.reporter, t.due, i]
       )
     }
-
+ 
     // ── Recalculate project progress ─────────────────────────────────────────
     for (const pid of [p1, p2, p3]) {
       const r = await client.query(
-        `SELECT COUNT(*) FILTER(WHERE status='done') done, COUNT(*) total FROM tasks WHERE project_id=$1`, [pid]
+        `SELECT COUNT(*) FILTER(WHERE status='done') done, COUNT(*) total FROM tasks WHERE project_id=$1`,
+        [pid]
       )
       const { done, total } = r.rows[0]
       const pct = Number(total) > 0 ? Math.round((Number(done) / Number(total)) * 100) : 0
       await client.query(`UPDATE projects SET progress=$1 WHERE id=$2`, [pct, pid])
     }
-
+ 
     await client.query('COMMIT')
     console.log('✅  Database seeded successfully!')
     console.log('')
-    console.log('   Demo Accounts (password: password123)')
+    console.log('   Demo Accounts (password: Password123!)')
     console.log('   ──────────────────────────────────────')
-    console.log('   oliver@taskflow.dev  →  Owner / Admin')
+    console.log('   oliver@taskflow.dev  →  Owner')
     console.log('   alex@taskflow.dev    →  Admin')
     console.log('   sarah@taskflow.dev   →  Admin')
     console.log('   john@taskflow.dev    →  Member')
@@ -140,5 +149,5 @@ async function seed() {
     await pool.end()
   }
 }
-
+ 
 seed()
