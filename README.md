@@ -1,359 +1,359 @@
-# TaskFlow — Capstone Project Management Platform
-
-> A full-stack, production-grade project management application built with the PERN stack.
-> **PostgreSQL · Express · React · Node.js · Redux Toolkit · Tailwind CSS · JWT**
-
----
-
-## 📋 Table of Contents
-
-1. [Features](#features)
-2. [Tech Stack](#tech-stack)
-3. [Architecture](#architecture)
-4. [Quick Start](#quick-start)
-5. [Environment Variables](#environment-variables)
-6. [Database Schema](#database-schema)
-7. [API Reference](#api-reference)
-8. [Email Configuration](#email-configuration)
-9. [Demo Accounts](#demo-accounts)
-10. [Deployment](#deployment)
-
----
-
-## ✨ Features
-
-| Feature | Details |
-|---|---|
-| **JWT Authentication** | Register, login, persistent sessions with secure token storage |
-| **Multi-Workspace** | Each user gets a default workspace; create unlimited workspaces |
-| **Role-Based Access Control** | Three roles: Owner, Admin, Member — enforced on every API route |
-| **Team Invitations** | Invite members by email with role selection (Admin/Member) |
-| **Invitation Emails** | Professional HTML email with workspace info, project table, role badge, and accept button |
-| **Task Assignment Emails** | Automatic email to assignee when a task is created or reassigned |
-| **Project Management** | Full CRUD — status, priority, dates, lead, team members |
-| **Task Management** | Six statuses, four priorities, six types, assignee, due date, time tracking |
-| **Task Comments** | Threaded discussion on every task with edit tracking |
-| **Activity Log** | Every task change is recorded with user, field, old/new values |
-| **Dashboard** | Live stats, recent projects, open tasks, team overview |
-| **Global Search** | Instant search across projects and tasks |
-| **Sidebar My Tasks** | Expandable list of your assigned open tasks |
-| **Progress Tracking** | Auto-calculated per project based on done/total tasks |
-| **Responsive UI** | Works on desktop and mobile with a slide-out sidebar |
-
----
-
-## 🛠 Tech Stack
-
-### Backend
-| Technology | Purpose |
-|---|---|
-| Node.js 18+ | JavaScript runtime |
-| Express 4 | HTTP framework |
-| PostgreSQL 14+ | Relational database |
-| node-postgres (pg) | Database driver |
-| bcryptjs | Password hashing (12 rounds) |
-| jsonwebtoken | JWT creation & verification |
-| nodemailer | SMTP email delivery |
-| helmet | HTTP security headers |
-| compression | Response compression |
-| express-rate-limit | Rate limiting |
-| express-validator | Request validation |
-| morgan | HTTP request logging |
-
-### Frontend
-| Technology | Purpose |
-|---|---|
-| React 18 | UI framework |
-| Vite | Build tool |
-| Redux Toolkit | State management |
-| React Router v6 | Client-side routing |
-| Axios | HTTP client |
-| Tailwind CSS | Utility-first styling |
-| react-hot-toast | Toast notifications |
-| Lucide React | Icon library |
-
----
-
-## 🏗 Architecture
-
+# TaskFlow — Professional Project Management Platform
+ 
+A full-stack project and task management web application built with the PERN stack (PostgreSQL, Express.js, React, Node.js). Developed as a capstone project for South East European University, Tetovo.
+ 
+**Live Demo:** https://frontend-pi-rouge-81.vercel.app
+ 
+**Demo Credentials:**
 ```
-taskflow/
-├── server/                        # Express REST API
+oliver@taskflow.dev / Password123!
+alex@taskflow.dev   / Password123!
+```
+ 
+---
+ 
+## Tech Stack
+ 
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Redux Toolkit 2.3, React Router 6, Tailwind CSS 3.4 |
+| Backend | Node.js 18, Express.js 4.18, Express Validator 7 |
+| Database | PostgreSQL 16 (Neon serverless) |
+| Auth | JSON Web Tokens (JWT), bcryptjs cost factor 12 |
+| Email | Nodemailer 8, Gmail SMTP |
+| Build | Vite 6 |
+| Deployment | Vercel (frontend + backend), Neon (database) |
+ 
+---
+ 
+## Features
+ 
+### Authentication & Security
+- JWT authentication with 7-day token expiry
+- ISO standard password validation — minimum 8 characters, uppercase, lowercase, number, special character
+- Live password strength indicator with 5 real-time checkmarks
+- Forgot password — secure email reset link with 1-hour expiry, single use token
+- bcrypt password hashing with cost factor 12
+- Password change with current password verification
+ 
+### Workspace Management
+- Multi-workspace support — create and switch between workspaces
+- 3-tier Role Based Access Control — Owner, Admin, Member
+- Workspace settings — rename, update description
+- Delete workspace — GitHub-style confirmation (type workspace name)
+- Auto-create personal workspace on registration
+ 
+### Team Collaboration
+- Invite members via email — professional HTML invitation email
+- Role management — promote/demote between Admin and Member
+- Remove members from workspace
+- Team overview with member list and roles
+ 
+### Projects
+- Full CRUD — create, read, update, delete projects
+- Project status — Active, Planning, Completed, On Hold, Cancelled
+- Project priority — Critical, High, Medium, Low
+- Project lead assignment
+- Team member assignment per project
+- Auto-calculated progress based on completed tasks
+- Progress bar visualization
+ 
+### Tasks
+- Full CRUD — create, read, update, delete tasks
+- 6 task statuses — Backlog, Todo, In Progress, In Review, Done, Cancelled
+- 4 priority levels — Critical, High, Medium, Low
+- 6 task types — Task, Bug, Feature, Improvement, Story, Epic
+- Single assignee with email notification on assignment
+- Due date and estimated hours tracking
+- Inline status, type and priority editing on task detail page
+- Reporter tracking with activity log
+ 
+### Task Discussion
+- Comment system on every task
+- Edit indicator on modified comments
+- Real-time comment posting with Enter to send
+- Comment timestamps and author avatars
+ 
+### Notifications
+- In-app notification bell with unread count badge
+- Notifications for task assignments and comments
+- Mark individual or all notifications as read
+- Click notification to navigate to relevant task
+ 
+### Search
+- Global debounced search across projects and tasks
+- Server-side ILIKE search — 300ms debounce
+- Results grouped by Projects and Tasks
+- Click result to navigate directly
+ 
+### Profile & Settings
+- Edit display name — avatar initials update automatically
+- Avatar color picker — 8 colors with live preview
+- Change password with strength indicator
+- Delete account — type email to confirm, preserves team tasks
+ 
+### UI & UX
+- Dark mode toggle — persists in localStorage across sessions
+- Light mode forced on auth pages, restored after login
+- Mobile responsive sidebar with overlay
+- Toast notifications for all user actions
+- Loading spinners and empty states
+- Keyboard shortcuts — Enter to submit comments
+ 
+---
+ 
+## Database Schema
+ 
+11 tables with proper foreign keys, CASCADE rules, indexes and auto-update triggers:
+ 
+```
+users                   — accounts with avatar and color
+workspaces              — team workspaces with owner
+workspace_members       — RBAC membership (owner/admin/member)
+workspace_invitations   — email invitation tokens (7-day expiry)
+projects                — projects with status, priority, progress
+project_members         — project team assignments
+tasks                   — tasks with 6 statuses, 4 priorities, 6 types
+task_comments           — discussion per task
+task_activities         — audit log of all task changes
+notifications           — in-app notification system
+password_reset_tokens   — secure forgot password tokens (1-hour expiry)
+```
+ 
+---
+ 
+## API Endpoints
+ 
+### Auth
+```
+POST   /api/auth/register              — Register new account
+POST   /api/auth/login                 — Login
+GET    /api/auth/me                    — Get current user
+PUT    /api/auth/profile               — Update name and avatar color
+PUT    /api/auth/password              — Change password
+DELETE /api/auth/account              — Delete account
+POST   /api/auth/forgot-password       — Request password reset email
+GET    /api/auth/verify-reset-token    — Validate reset token
+POST   /api/auth/reset-password        — Set new password with token
+```
+ 
+### Workspaces
+```
+GET    /api/workspaces                              — List workspaces
+POST   /api/workspaces                              — Create workspace
+PUT    /api/workspaces/:id                          — Update workspace (owner)
+DELETE /api/workspaces/:id                          — Delete workspace (owner)
+GET    /api/workspaces/:id/members                  — List members
+POST   /api/workspaces/:id/invite                   — Invite member (admin)
+PATCH  /api/workspaces/:id/members/:userId/role     — Change role (admin)
+DELETE /api/workspaces/:id/members/:userId          — Remove member (admin)
+GET    /api/workspaces/:id/search                   — Global search
+```
+ 
+### Projects
+```
+GET    /api/workspaces/:id/projects    — List projects
+POST   /api/workspaces/:id/projects    — Create project
+GET    /api/projects/:id               — Get project detail
+PUT    /api/projects/:id               — Update project
+DELETE /api/projects/:id               — Delete project
+```
+ 
+### Tasks
+```
+GET    /api/projects/:id/tasks         — List tasks for project
+POST   /api/projects/:id/tasks         — Create task
+GET    /api/tasks/:id                  — Get task detail
+PUT    /api/tasks/:id                  — Update task
+DELETE /api/tasks/:id                  — Delete task
+GET    /api/tasks/my                   — Get my assigned tasks
+POST   /api/tasks/:id/comments         — Add comment
+PUT    /api/tasks/:id/comments/:cId    — Edit comment
+DELETE /api/tasks/:id/comments/:cId    — Delete comment
+```
+ 
+### Notifications
+```
+GET    /api/notifications              — List notifications
+PATCH  /api/notifications/read         — Mark all as read
+PATCH  /api/notifications/:id/read     — Mark one as read
+```
+ 
+---
+ 
+## Project Structure
+ 
+```
+capstone/
+├── client/                         # React frontend
 │   ├── src/
-│   │   ├── config/index.js        # Centralised configuration
-│   │   ├── db/
-│   │   │   ├── pool.js            # PostgreSQL connection pool
-│   │   │   ├── init.js            # Schema creation (9 tables)
-│   │   │   └── seed.js            # Demo data
-│   │   ├── middleware/
-│   │   │   ├── auth.js            # JWT + workspace RBAC + project access
-│   │   │   └── errorHandler.js    # Validation, 404, global error handler
-│   │   ├── controllers/
-│   │   │   ├── authController.js
-│   │   │   ├── workspaceController.js
-│   │   │   ├── teamController.js  # Invite + accept flow
-│   │   │   ├── projectController.js
-│   │   │   └── taskController.js  # With email + activity logging
-│   │   ├── routes/index.js        # All routes with validation
-│   │   ├── services/
-│   │   │   └── emailService.js    # HTML email templates
-│   │   ├── utils/
-│   │   │   ├── logger.js          # Colour-coded console logger
-│   │   │   └── response.js        # Standardised API response helpers
-│   │   └── index.js               # Express app entry point
-│   ├── .env.example
-│   └── package.json
+│   │   ├── api/
+│   │   │   └── axios.js            # Axios instance with JWT interceptor
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   └── AppLayout.jsx   # Sidebar, TopBar, dark mode toggle
+│   │   │   └── ui/
+│   │   │       └── index.jsx       # Shared components — Avatar, Badge, Modal
+│   │   ├── pages/
+│   │   │   ├── auth/
+│   │   │   │   ├── AuthPage.jsx    # Login and Register
+│   │   │   │   ├── ForgotPassword.jsx
+│   │   │   │   ├── ResetPassword.jsx
+│   │   │   │   └── AcceptInvite.jsx
+│   │   │   ├── dashboard/
+│   │   │   │   └── Dashboard.jsx
+│   │   │   ├── projects/
+│   │   │   │   ├── Projects.jsx
+│   │   │   │   └── ProjectDetail.jsx
+│   │   │   ├── tasks/
+│   │   │   │   └── TaskDetail.jsx
+│   │   │   ├── team/
+│   │   │   │   └── Team.jsx
+│   │   │   └── settings/
+│   │   │       └── Settings.jsx
+│   │   ├── store/
+│   │   │   ├── slices/             # Redux slices for each domain
+│   │   │   └── store.js
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   └── vite.config.js
 │
-└── client/                        # React SPA
-    ├── src/
-    │   ├── api/axios.js           # Axios instance with interceptors
-    │   ├── store/store.js         # Redux store + all slices
-    │   ├── components/
-    │   │   ├── ui/index.jsx       # Avatar, Badge, Modal, Spinner, etc.
-    │   │   └── layout/AppLayout.jsx  # Sidebar + TopBar + Outlet
-    │   ├── pages/
-    │   │   ├── auth/AuthPage.jsx
-    │   │   ├── auth/AcceptInvite.jsx
-    │   │   ├── dashboard/Dashboard.jsx
-    │   │   ├── projects/Projects.jsx
-    │   │   ├── projects/ProjectDetail.jsx
-    │   │   ├── tasks/TaskDetail.jsx
-    │   │   ├── team/Team.jsx
-    │   │   └── settings/Settings.jsx
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── index.css
-    ├── index.html
-    ├── vite.config.js
-    ├── tailwind.config.js
-    └── package.json
+└── server/                         # Express backend
+    └── src/
+        ├── config/
+        │   └── index.js            # Centralised configuration
+        ├── controllers/
+        │   ├── authController.js
+        │   ├── workspaceController.js
+        │   ├── teamController.js
+        │   ├── projectController.js
+        │   ├── taskController.js
+        │   ├── searchController.js
+        │   ├── notificationController.js
+        │   └── passwordResetController.js
+        ├── db/
+        │   ├── pool.js             # PostgreSQL connection pool
+        │   ├── init.js             # Schema creation
+        │   └── seed.js             # Demo data
+        ├── middleware/
+        │   ├── auth.js             # JWT verification, RBAC
+        │   └── errorHandler.js     # Global error handler
+        ├── routes/
+        │   └── index.js            # All API routes
+        ├── services/
+        │   └── emailService.js     # Nodemailer email templates
+        └── utils/
+            ├── logger.js
+            └── response.js         # Standardised API responses
 ```
-
+ 
 ---
-
-## 🚀 Quick Start
-
+ 
+## Local Development
+ 
 ### Prerequisites
-- **Node.js 18+**
-- **PostgreSQL 14+** (running locally or a cloud URL)
-
-### 1 — Database
-
-```bash
-# In psql:
-CREATE DATABASE taskflow;
-```
-
-### 2 — Backend
-
+- Node.js 18+
+- PostgreSQL 16 (local) or Neon account
+- Gmail account with App Password for SMTP
+ 
+### Backend Setup
+ 
 ```bash
 cd server
 npm install
-cp .env.example .env
-# → Edit .env with your values (see Environment Variables below)
-
-npm run db:init    # Creates all tables, indexes and triggers
-npm run db:seed    # Seeds demo data (optional)
-npm run dev        # Starts on http://localhost:5000
 ```
-
-### 3 — Frontend
-
+ 
+Create `server/.env`:
+```.env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=taskflow
+DB_USER=postgres
+DB_PASSWORD="your_database_password_of_pgadmin"
+JWT_SECRET=your-secret-key-at-least-64-chars
+JWT_EXPIRES_IN=7d
+SMTP_USER=your@gmail.com
+SMTP_PASS=your-gmail-app-password
+EMAIL_FROM_NAME=TaskFlow
+EMAIL_FROM_ADDRESS=your@gmail.com
+CLIENT_ORIGIN=http://localhost:5173
+FRONTEND_URL=http://localhost:5173
+PORT=5000
+```
+ 
+```bash
+npm run db:init    # Create all tables
+npm run db:seed    # Insert demo data
+npm run dev        # Start with nodemon
+```
+ 
+### Frontend Setup
+ 
 ```bash
 cd client
 npm install
-npm run dev        # Starts on http://localhost:5173
 ```
-
-Open **http://localhost:5173**
-
----
-
-## ⚙️ Environment Variables
-
-Copy `server/.env.example` to `server/.env` and fill in:
-
+ 
+Create `client/.env`:
 ```env
-# Server
-NODE_ENV=development
-PORT=5000
-FRONTEND_URL=http://localhost:5173
-
-# PostgreSQL (use DATABASE_URL for cloud, or individual fields for local)
-DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/taskflow
-
-# JWT — generate with:
-# node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-JWT_SECRET=your_64_char_hex_secret
-JWT_EXPIRES_IN=7d
-
-# CORS
-CLIENT_ORIGIN=http://localhost:5173
-
-# Email (see Email Configuration section)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=yourname@gmail.com
-SMTP_PASS=your_app_password
-EMAIL_FROM_NAME=TaskFlow
-EMAIL_FROM_ADDRESS=yourname@gmail.com
+VITE_API_URL=http://localhost:5000/api
 ```
-
----
-
-## 🗄 Database Schema
-
-```sql
-users               id · name · email · password_hash · avatar · color · is_active · last_login
-workspaces          id · name · description · owner_id
-workspace_members   workspace_id · user_id · role (owner|admin|member)
-workspace_invitations  id · workspace_id · invited_by · email · role · token · status · expires_at
-projects            id · workspace_id · name · description · status · priority · progress · start_date · end_date · lead_id
-project_members     project_id · user_id
-tasks               id · project_id · title · description · status · priority · type · assignee_id · reporter_id · due_date · estimated_hours · actual_hours · tags · position
-task_comments       id · task_id · user_id · content · is_edited
-task_activities     id · task_id · user_id · action · field · old_value · new_value
-notifications       id · user_id · type · title · body · link · is_read
+ 
+```bash
+npm run dev        # Start Vite dev server
 ```
-
+ 
+App runs at `http://localhost:5173`
+ 
 ---
-
-## 🔌 API Reference
-
-All protected routes require `Authorization: Bearer <token>`.
-
-### Auth
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register` | — | Register + auto-create workspace |
-| POST | `/api/auth/login` | — | Login → returns token + workspaces |
-| GET  | `/api/auth/me` | ✅ | Current user + workspaces |
-| PUT  | `/api/auth/profile` | ✅ | Update name/color |
-| PUT  | `/api/auth/password` | ✅ | Change password |
-
-### Workspaces
-| Method | Endpoint | Role |
-|--------|----------|------|
-| GET    | `/api/workspaces` | any |
-| POST   | `/api/workspaces` | any |
-| GET    | `/api/workspaces/:workspaceId` | member |
-| PUT    | `/api/workspaces/:workspaceId` | owner |
-| DELETE | `/api/workspaces/:workspaceId` | owner |
-| GET    | `/api/workspaces/:workspaceId/stats` | member |
-
-### Team
-| Method | Endpoint | Role |
-|--------|----------|------|
-| GET    | `/api/workspaces/:workspaceId/members` | member |
-| GET    | `/api/workspaces/:workspaceId/users` | member |
-| POST   | `/api/workspaces/:workspaceId/invite` | **admin** |
-| PATCH  | `/api/workspaces/:workspaceId/members/:userId/role` | **admin** |
-| DELETE | `/api/workspaces/:workspaceId/members/:userId` | **admin** |
-| GET    | `/api/invite/info?token=xxx` | public |
-| POST   | `/api/invite/accept` | authenticated |
-
-### Projects
-| Method | Endpoint | Notes |
-|--------|----------|-------|
-| GET    | `/api/workspaces/:workspaceId/projects` | |
-| POST   | `/api/workspaces/:workspaceId/projects` | |
-| GET    | `/api/projects/:id` | includes members |
-| GET    | `/api/projects/:id/stats` | task counts by status/priority |
-| PUT    | `/api/projects/:id` | |
-| DELETE | `/api/projects/:id` | admin or creator |
-
-### Tasks
-| Method | Endpoint | Notes |
-|--------|----------|-------|
-| GET    | `/api/tasks/my` | Your open tasks, priority-sorted |
-| GET    | `/api/tasks/:id` | Full detail with comments + activities |
-| PUT    | `/api/tasks/:id` | Sends email if assignee changes |
-| DELETE | `/api/tasks/:id` | Recalculates project progress |
-| POST   | `/api/tasks/:id/comments` | |
-| PUT    | `/api/tasks/:id/comments/:commentId` | |
-| DELETE | `/api/tasks/:id/comments/:commentId` | |
-| GET    | `/api/projects/:projectId/tasks` | |
-| POST   | `/api/projects/:projectId/tasks` | Sends email to assignee |
-
+ 
+## Deployment
+ 
+Both frontend and backend are deployed on **Vercel** with **Neon** PostgreSQL.
+ 
+### Backend Environment Variables (Vercel)
+```
+DATABASE_URL
+JWT_SECRET
+JWT_EXPIRES_IN
+SMTP_USER
+SMTP_PASS
+EMAIL_FROM_NAME
+EMAIL_FROM_ADDRESS
+CLIENT_ORIGIN
+FRONTEND_URL
+```
+ 
+### Frontend Environment Variables (Vercel)
+```
+VITE_API_URL
+```
+ 
+CI/CD is configured via GitHub — every push to `master` triggers automatic deployment.
+ 
 ---
-
-## 📧 Email Configuration
-
-### Gmail (Recommended for development)
-1. Enable 2-Factor Authentication on your Google account
-2. Visit: **myaccount.google.com → Security → App Passwords**
-3. Create a new App Password for "Mail"
-4. Use the generated 16-character password as `SMTP_PASS`
-
-> **Note:** If email is not configured, the API still works fully. Invitations are created in the database; email send failures are logged but do not block the API response.
-
-### Other SMTP Providers
-| Provider | SMTP_HOST | SMTP_PORT |
-|----------|-----------|-----------|
-| Gmail | smtp.gmail.com | 587 |
-| Outlook | smtp-mail.outlook.com | 587 |
-| SendGrid | smtp.sendgrid.net | 587 |
-| Mailgun | smtp.mailgun.org | 587 |
-
+ 
+## Security
+ 
+- All passwords hashed with bcrypt cost factor 12
+- JWT tokens expire after 7 days
+- Password reset tokens expire after 1 hour and are single-use
+- ISO standard password requirements enforced on both frontend and backend
+- Role-based middleware on every protected route
+- SQL injection prevented via parameterised queries
+- CORS configured to allow only trusted origins
+- Helmet.js security headers on all responses
+ 
 ---
-
-## 👥 Demo Accounts
-
-After running `npm run db:seed`:
-
-| Email | Password | Role |
-|-------|----------|------|
-| oliver@taskflow.dev | password123 | Owner (Cloud Ops Hub) |
-| alex@taskflow.dev | password123 | Admin |
-| sarah@taskflow.dev | password123 | Admin |
-| john@taskflow.dev | password123 | Member |
-| maria@taskflow.dev | password123 | Member |
-
-**Workspace:** Cloud Ops Hub · 3 projects · 12 tasks
-
----
-
-## 🌐 Deployment
-
-### 1. Backend (Already Deployed)
-The Express API is hosted on Vercel at:
-`https://capstoneproject-drab-five.vercel.app/api`
-
-**Environment Variables in Vercel:**
-- `DATABASE_URL`: Your PostgreSQL connection string.
-- `JWT_SECRET`: A long random string.
-- `FRONTEND_URL`: Your Vercel frontend URL (e.g., `https://taskflow-client.vercel.app`).
-- `CLIENT_ORIGIN`: Same as `FRONTEND_URL`.
-- `SMTP_USER` / `SMTP_PASS`: For email notifications.
-
-### 2. Frontend  (Already Deployed)
-1. **GitHub Sync**: Push your code to a GitHub repository.
-2. **Import to Vercel**:
-    - Select the repository.
-    - **Framework Preset**: Vite.
-    - **Root Directory**: `client`.
-3. **Environment Variables**:
-    - Add `VITE_API_URL` = `https://capstoneproject-drab-five.vercel.app/api`
-4. **Deploy**: Vercel will build and host the app automatically.
-
-> **Note:** The `client/vercel.json` file handles SPA routing, ensuring that refreshing the page on a dashboard or project route doesn't return a 404.
-
----
-
-## 📚 Academic Information
-
-**Project:** Full-Stack PERN Project Management Application  
-**Stack:** PostgreSQL, Express, React, Node.js  
-**Key Concepts Demonstrated:**
-- RESTful API design with proper HTTP status codes
-- JWT-based stateless authentication
-- Role-Based Access Control (RBAC)
-- Database normalisation (3NF) with foreign keys and constraints
-- Asynchronous email delivery with Nodemailer
-- Redux state management with Redux Toolkit
-- Component-based UI architecture with React
-- Environment-based configuration
-- Error handling at middleware level
-- SQL transactions for data integrity
-- Index optimisation for common queries
+ 
+## Author
+ 
+**Jasemin Alili** — Student ID: 130149
+ 
+South East European University, Tetovo
+Faculty of Contemporary Sciences and Technologies
+Academic Year 2025/2026
+Mentor: Prof. Dr. Visar Shehu
