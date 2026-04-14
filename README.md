@@ -268,11 +268,11 @@ npm install
  
 Create `server/.env`:
 ```.env
-#DB_HOST=localhost
-#DB_PORT=5432
-#DB_NAME=taskflow
-#DB_USER=postgres
-#DB_PASSWORD="your_database_password_of_pgadmin"
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=taskflow
+DB_USER=postgres
+DB_PASSWORD="your_database_password_of_pgadmin"
 JWT_SECRET=your-secret-key-at-least-64-chars
 JWT_EXPIRES_IN=7d
 SMTP_USER=your@gmail.com
