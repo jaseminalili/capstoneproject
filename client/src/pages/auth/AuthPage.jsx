@@ -15,16 +15,16 @@ const validatePassword = (pwd) => {
 }
  
 const PASSWORD_RULES = [
-  { test: p => p.length >= 8,             label: 'At least 8 characters' },
-  { test: p => /[A-Z]/.test(p),           label: 'One uppercase letter' },
-  { test: p => /[a-z]/.test(p),           label: 'One lowercase letter' },
-  { test: p => /[0-9]/.test(p),           label: 'One number' },
-  { test: p => /[^A-Za-z0-9]/.test(p),   label: 'One special character (!@#$...)' },
+  { test: p => p.length >= 8,           label: 'At least 8 characters' },
+  { test: p => /[A-Z]/.test(p),         label: 'One uppercase letter' },
+  { test: p => /[a-z]/.test(p),         label: 'One lowercase letter' },
+  { test: p => /[0-9]/.test(p),         label: 'One number' },
+  { test: p => /[^A-Za-z0-9]/.test(p), label: 'One special character (!@#$...)' },
 ]
  
 export default function AuthPage({ mode = 'login' }) {
-  const dispatch   = useDispatch()
-  const navigate   = useNavigate()
+  const dispatch       = useDispatch()
+  const navigate       = useNavigate()
   const [searchParams] = useSearchParams()
   const { loading, error, user } = useSelector(s => s.auth)
   const [show,        setShow]        = useState(false)
@@ -85,7 +85,6 @@ export default function AuthPage({ mode = 'login' }) {
  
   const allRulesPassed = PASSWORD_RULES.every(r => r.test(form.password))
  
-  // Clean up session expired message for login page
   const displayError = error === 'Session expired. Please log in again.'
     ? 'Invalid email or password. Please try again.'
     : error
@@ -157,17 +156,13 @@ export default function AuthPage({ mode = 'login' }) {
                 <label className="block text-sm font-medium text-gray-700">
                   Password <span className="text-red-500">*</span>
                 </label>
-                {/* Forgot password — only on login */}
+                {/* Forgot password — navigates to dedicated page */}
                 {isLogin && (
-                  <button
-                    type="button"
-                    onClick={() => toast('To reset your password, login and go to Settings → Change Password.', {
-                      icon: '🔑',
-                      duration: 5000,
-                    })}
+                  <Link
+                    to="/forgot-password"
                     className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors">
                     Forgot your password?
-                  </button>
+                  </Link>
                 )}
               </div>
               <div className="relative">

@@ -147,6 +147,15 @@ CREATE TABLE IF NOT EXISTS notifications (
   is_read      BOOLEAN      NOT NULL DEFAULT FALSE,
   created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token      UUID        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '1 hour',
+  used       BOOLEAN     NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
 
 -- ─── Indexes ──────────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user     ON workspace_members(user_id);

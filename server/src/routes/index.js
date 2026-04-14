@@ -4,13 +4,14 @@ const { body } = require('express-validator')
 const { authenticate, requireWorkspaceRole, requireProjectMember } = require('../middleware/auth')
 const { validate } = require('../middleware/errorHandler')
 
-const auth    = require('../controllers/authController')
-const ws      = require('../controllers/workspaceController')
-const team    = require('../controllers/teamController')
-const proj    = require('../controllers/projectController')
-const task    = require('../controllers/taskController')
-const search  = require('../controllers/searchController')
-const notify  = require('../controllers/notificationController')
+const auth      = require('../controllers/authController')
+const pwdReset  = require('../controllers/passwordResetController')
+const ws        = require('../controllers/workspaceController')
+const team      = require('../controllers/teamController')
+const proj      = require('../controllers/projectController')
+const task      = require('../controllers/taskController')
+const search    = require('../controllers/searchController')
+const notify    = require('../controllers/notificationController')
 
 const router = Router()
 
@@ -50,6 +51,27 @@ router.put('/auth/password',
   auth.changePassword
 )
 router.delete('/auth/account', authenticate, auth.deleteAccount)
+
+// ── Forgot / Reset Password ───────────────────────────────────────────────────
+router.post('/auth/forgot-password',
+  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
+  validate,
+  pwdReset.forgotPassword
+)
+
+router.get('/auth/verify-reset-token', pwdReset.verifyResetToken)
+
+router.post('/auth/reset-password',
+  body('token').notEmpty().withMessage('Token is required'),
+  body('password')
+    .isLength({ min:8 }).withMessage('Password must be at least 8 characters')
+    .matches(/[A-Z]/).withMessage('Must contain uppercase letter')
+    .matches(/[a-z]/).withMessage('Must contain lowercase letter')
+    .matches(/[0-9]/).withMessage('Must contain a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Must contain a special character'),
+  validate,
+  pwdReset.resetPassword
+)
 
 // ── Invitations (public) ──────────────────────────────────────────────────────
 router.get('/invite/info',    team.getInviteInfo)
