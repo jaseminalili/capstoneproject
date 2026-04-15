@@ -22,8 +22,12 @@ server/.env
 .DS_Store
 Thumbs.db
 
-# IDES
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Test reports (contain keywords that trigger secret scanners)
+server/tests/test-report.html
+client/tests/Frontend_test_report.html
