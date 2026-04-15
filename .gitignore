@@ -30,5 +30,5 @@ Thumbs.db
 
 # Test reports (contain keywords that trigger secret scanners)
 server/tests/test-report.html
-client/tests/Frontend_test_report.htmlserver/tests/
+server/tests/
 client/tests/
