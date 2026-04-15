@@ -8,7 +8,27 @@
     "dev": "nodemon src/index.js",
     "db:init": "node src/db/init.js",
     "db:seed": "node src/db/seed.js",
-    "db:reset": "node src/db/init.js && node src/db/seed.js"
+    "db:reset": "node src/db/init.js && node src/db/seed.js",
+    "test": "jest --runInBand --forceExit --detectOpenHandles",
+    "test:watch": "jest --watch --runInBand"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "testTimeout": 30000,
+    "verbose": true,
+    "reporters": [
+      "default",
+      ["jest-html-reporter", {
+        "pageTitle": "TaskFlow — Automated Test Results",
+        "outputPath": "tests/test-report.html",
+        "includeConsoleLog": false,
+        "includeFailureMsg": true,
+        "theme": "defaultTheme",
+        "dateFormat": "dd-mm-yyyy HH:MM:ss",
+        "sort": "status"
+      }]
+    ]
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -26,6 +46,9 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "jest": "^30.3.0",
+    "jest-html-reporter": "^4.4.0",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.2.2"
   }
 }

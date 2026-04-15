@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    allowedHosts:'all',
+    allowedHosts: 'all',
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
@@ -16,5 +16,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.js'],
   }
 })
