@@ -1,19 +1,19 @@
 # TaskFlow — Professional Project Management Platform
- 
+
 A full-stack project and task management web application built with the PERN stack (PostgreSQL, Express.js, React, Node.js). Developed as a capstone project for South East European University, Tetovo.
- 
+
 **Live Demo:** https://frontend-pi-rouge-81.vercel.app
- 
+
 **Demo Credentials:**
 ```
 oliver@taskflow.dev / Password123!
 alex@taskflow.dev   / Password123!
 ```
- 
+
 ---
- 
+
 ## Tech Stack
- 
+
 | Layer | Technology |
 |---|---|
 | Frontend | React 18, Redux Toolkit 2.3, React Router 6, Tailwind CSS 3.4 |
@@ -23,11 +23,11 @@ alex@taskflow.dev   / Password123!
 | Email | Nodemailer 8, Gmail SMTP |
 | Build | Vite 6 |
 | Deployment | Vercel (frontend + backend), Neon (database) |
- 
+
 ---
- 
+
 ## Features
- 
+
 ### Authentication & Security
 - JWT authentication with 7-day token expiry
 - ISO standard password validation — minimum 8 characters, uppercase, lowercase, number, special character
@@ -35,29 +35,30 @@ alex@taskflow.dev   / Password123!
 - Forgot password — secure email reset link with 1-hour expiry, single use token
 - bcrypt password hashing with cost factor 12
 - Password change with current password verification
- 
+
 ### Workspace Management
 - Multi-workspace support — create and switch between workspaces
 - 3-tier Role Based Access Control — Owner, Admin, Member
 - Workspace settings — rename, update description
 - Delete workspace — GitHub-style confirmation (type workspace name)
 - Auto-create personal workspace on registration
- 
+
 ### Team Collaboration
 - Invite members via email — professional HTML invitation email
 - Role management — promote/demote between Admin and Member
 - Remove members from workspace
 - Team overview with member list and roles
- 
+
 ### Projects
 - Full CRUD — create, read, update, delete projects
+- Edit project — status, priority, dates and lead editable via modal
 - Project status — Active, Planning, Completed, On Hold, Cancelled
 - Project priority — Critical, High, Medium, Low
 - Project lead assignment
 - Team member assignment per project
 - Auto-calculated progress based on completed tasks
 - Progress bar visualization
- 
+
 ### Tasks
 - Full CRUD — create, read, update, delete tasks
 - 6 task statuses — Backlog, Todo, In Progress, In Review, Done, Cancelled
@@ -67,31 +68,31 @@ alex@taskflow.dev   / Password123!
 - Due date and estimated hours tracking
 - Inline status, type and priority editing on task detail page
 - Reporter tracking with activity log
- 
+
 ### Task Discussion
 - Comment system on every task
 - Edit indicator on modified comments
 - Real-time comment posting with Enter to send
 - Comment timestamps and author avatars
- 
+
 ### Notifications
 - In-app notification bell with unread count badge
 - Notifications for task assignments and comments
 - Mark individual or all notifications as read
 - Click notification to navigate to relevant task
- 
+
 ### Search
 - Global debounced search across projects and tasks
 - Server-side ILIKE search — 300ms debounce
 - Results grouped by Projects and Tasks
 - Click result to navigate directly
- 
+
 ### Profile & Settings
 - Edit display name — avatar initials update automatically
 - Avatar color picker — 8 colors with live preview
 - Change password with strength indicator
 - Delete account — type email to confirm, preserves team tasks
- 
+
 ### UI & UX
 - Dark mode toggle — persists in localStorage across sessions
 - Light mode forced on auth pages, restored after login
@@ -99,13 +100,38 @@ alex@taskflow.dev   / Password123!
 - Toast notifications for all user actions
 - Loading spinners and empty states
 - Keyboard shortcuts — Enter to submit comments
- 
+
 ---
- 
+
+## Automated Tests
+
+45 automated tests — 0 failures.
+
+| Framework | Suite | Tests | Status |
+|---|---|---|---|
+| Jest + Supertest | auth.test.js | 17 | ✅ All passed |
+| Jest + Supertest | workspace.test.js | 16 | ✅ All passed |
+| Vitest + RTL | AuthPage.test.jsx | 12 | ✅ All passed |
+| **Total** | | **45** | **✅ 0 failures** |
+
+### Run Backend Tests
+```bash
+cd server
+npm test
+```
+
+### Run Frontend Tests
+```bash
+cd client
+npm test
+```
+
+---
+
 ## Database Schema
- 
+
 11 tables with proper foreign keys, CASCADE rules, indexes and auto-update triggers:
- 
+
 ```
 users                   — accounts with avatar and color
 workspaces              — team workspaces with owner
@@ -119,11 +145,11 @@ task_activities         — audit log of all task changes
 notifications           — in-app notification system
 password_reset_tokens   — secure forgot password tokens (1-hour expiry)
 ```
- 
+
 ---
- 
+
 ## API Endpoints
- 
+
 ### Auth
 ```
 POST   /api/auth/register              — Register new account
@@ -131,12 +157,12 @@ POST   /api/auth/login                 — Login
 GET    /api/auth/me                    — Get current user
 PUT    /api/auth/profile               — Update name and avatar color
 PUT    /api/auth/password              — Change password
-DELETE /api/auth/account              — Delete account
+DELETE /api/auth/account               — Delete account
 POST   /api/auth/forgot-password       — Request password reset email
 GET    /api/auth/verify-reset-token    — Validate reset token
 POST   /api/auth/reset-password        — Set new password with token
 ```
- 
+
 ### Workspaces
 ```
 GET    /api/workspaces                              — List workspaces
@@ -149,7 +175,7 @@ PATCH  /api/workspaces/:id/members/:userId/role     — Change role (admin)
 DELETE /api/workspaces/:id/members/:userId          — Remove member (admin)
 GET    /api/workspaces/:id/search                   — Global search
 ```
- 
+
 ### Projects
 ```
 GET    /api/workspaces/:id/projects    — List projects
@@ -158,7 +184,7 @@ GET    /api/projects/:id               — Get project detail
 PUT    /api/projects/:id               — Update project
 DELETE /api/projects/:id               — Delete project
 ```
- 
+
 ### Tasks
 ```
 GET    /api/projects/:id/tasks         — List tasks for project
@@ -171,18 +197,18 @@ POST   /api/tasks/:id/comments         — Add comment
 PUT    /api/tasks/:id/comments/:cId    — Edit comment
 DELETE /api/tasks/:id/comments/:cId    — Delete comment
 ```
- 
+
 ### Notifications
 ```
 GET    /api/notifications              — List notifications
 PATCH  /api/notifications/read         — Mark all as read
 PATCH  /api/notifications/:id/read     — Mark one as read
 ```
- 
+
 ---
- 
+
 ## Project Structure
- 
+
 ```
 capstone/
 ├── client/                         # React frontend
@@ -249,25 +275,25 @@ capstone/
             ├── logger.js
             └── response.js         # Standardised API responses
 ```
- 
+
 ---
- 
+
 ## Local Development
- 
+
 ### Prerequisites
 - Node.js 18+
 - PostgreSQL 16 (local) or Neon account
 - Gmail account with App Password for SMTP
- 
+
 ### Backend Setup
- 
+
 ```bash
 cd server
 npm install
 ```
- 
+
 Create `server/.env`:
-```.env
+```env
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=taskflow
@@ -283,37 +309,39 @@ CLIENT_ORIGIN=http://localhost:5173
 FRONTEND_URL=http://localhost:5173
 PORT=5000
 ```
- 
+
 ```bash
 npm run db:init    # Create all tables
 npm run db:seed    # Insert demo data
 npm run dev        # Start with nodemon
+npm test           # Run automated tests (45 tests)
 ```
- 
+
 ### Frontend Setup
- 
+
 ```bash
 cd client
 npm install
 ```
- 
+
 Create `client/.env`:
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
- 
+
 ```bash
 npm run dev        # Start Vite dev server
+npm test           # Run automated tests (12 tests)
 ```
- 
+
 App runs at `http://localhost:5173`
- 
+
 ---
- 
+
 ## Deployment
- 
+
 Both frontend and backend are deployed on **Vercel** with **Neon** PostgreSQL.
- 
+
 ### Backend Environment Variables (Vercel)
 ```
 DATABASE_URL
@@ -326,18 +354,18 @@ EMAIL_FROM_ADDRESS
 CLIENT_ORIGIN
 FRONTEND_URL
 ```
- 
+
 ### Frontend Environment Variables (Vercel)
 ```
 VITE_API_URL
 ```
- 
+
 CI/CD is configured via GitHub — every push to `master` triggers automatic deployment.
- 
+
 ---
- 
+
 ## Security
- 
+
 - All passwords hashed with bcrypt cost factor 12
 - JWT tokens expire after 7 days
 - Password reset tokens expire after 1 hour and are single-use
@@ -346,13 +374,14 @@ CI/CD is configured via GitHub — every push to `master` triggers automatic dep
 - SQL injection prevented via parameterised queries
 - CORS configured to allow only trusted origins
 - Helmet.js security headers on all responses
- 
+- GitHub-style delete confirmation for dangerous operations
+
 ---
- 
+
 ## Author
- 
+
 **Jasemin Alili** — Student ID: 130149
- 
+
 South East European University, Tetovo
 Faculty of Contemporary Sciences and Technologies
 Academic Year 2025/2026
