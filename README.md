@@ -285,6 +285,7 @@ npm install
  
 Create `server/.env`:
 ```env
+DATABASE_URL=postgresql://neondb_owner:NEW_PASSWORD@ep-divine-hat-a4vwo8vv.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=taskflow
