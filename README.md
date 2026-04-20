@@ -374,6 +374,9 @@ CI/CD is configured via GitHub — every push to `master` triggers automatic dep
 **Jasemin Alili** — Student ID: 130149
  
 South East European University, Tetovo
+
 Faculty of Contemporary Sciences and Technologies
+
 Academic Year 2025/2026
+
 Mentor: Prof. Dr. Visar Shehu
