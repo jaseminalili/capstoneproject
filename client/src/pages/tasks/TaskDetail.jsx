@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, MessageSquare, Send, Calendar, Pencil, Check, X, Clock } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Send, Calendar, Pencil, Check, X, Clock, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
-  fetchTaskDetail, updateTask, addComment, clearCurrentTask, patchProjectProgress
+  fetchTaskDetail, updateTask, addComment, editComment, deleteComment, clearCurrentTask, patchProjectProgress
 } from '../../store/store'
 import { Avatar, StatusBadge, PriorityBadge, TypeBadge, ProgressBar, PageSpinner } from '../../components/ui'
  
@@ -49,6 +49,11 @@ export function TaskDetail() {
   const [editTitle, setEditTitle] = useState(false)
   const [newTitle,  setNewTitle]  = useState('')
  
+  // Edit comment state
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editingContent,   setEditingContent]   = useState('')
+  const [savingComment,    setSavingComment]     = useState(false)
+ 
   useEffect(() => {
     if (id) dispatch(fetchTaskDetail(id))
     return () => dispatch(clearCurrentTask())
@@ -73,6 +78,39 @@ export function TaskDetail() {
       setComment('')
     } catch (e) { toast.error(e.message) }
     finally { setPosting(false) }
+  }
+ 
+  // Start editing a comment
+  const startEdit = (c) => {
+    setEditingCommentId(c.id)
+    setEditingContent(c.content)
+  }
+ 
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingCommentId(null)
+    setEditingContent('')
+  }
+ 
+  // Save edited comment
+  const saveEdit = async (commentId) => {
+    if (!editingContent.trim()) return
+    setSavingComment(true)
+    try {
+      await dispatch(editComment({ taskId: task.id, commentId, content: editingContent.trim() })).unwrap()
+      setEditingCommentId(null)
+      setEditingContent('')
+      toast.success('Comment updated!')
+    } catch (e) { toast.error(e.message) }
+    finally { setSavingComment(false) }
+  }
+ 
+  // Delete comment
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await dispatch(deleteComment({ taskId: task.id, commentId })).unwrap()
+      toast.success('Comment deleted.')
+    } catch (e) { toast.error(e.message) }
   }
  
   const backUrl = params.get('projectId') ? `/projects/${params.get('projectId')}` : '/projects'
@@ -111,17 +149,60 @@ export function TaskDetail() {
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Be the first to start the discussion.</p>
               </div>
             ) : task.comments.map(c => (
-              <div key={c.id} className="flex gap-3.5 mb-6">
+              <div key={c.id} className="flex gap-3.5 mb-6 group">
                 <Avatar user={{ name: c.user_name, avatar: c.user_avatar, color: c.user_color }} size="sm" className="shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <div className="flex items-baseline gap-2 mb-1.5">
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">{c.user_name}</span>
                     <span className="text-xs text-gray-400 dark:text-gray-500">{fmtTime(c.created_at)}</span>
                     {c.is_edited && <span className="text-xs text-gray-400 dark:text-gray-500 italic">(edited)</span>}
+ 
+                    {/* Edit / Delete buttons — only for comment author */}
+                    {user?.id === c.user_id && editingCommentId !== c.id && (
+                      <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => startEdit(c)}
+                          className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-blue-500 transition-colors">
+                          <Pencil size={12} />
+                        </button>
+                        <button onClick={() => handleDeleteComment(c.id)}
+                          className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 transition-colors">
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {c.content}
-                  </div>
+ 
+                  {/* Edit mode */}
+                  {editingCommentId === c.id ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={editingContent}
+                        onChange={e => setEditingContent(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(c.id) }
+                          if (e.key === 'Escape') cancelEdit()
+                        }}
+                        autoFocus
+                        rows={3}
+                        className="input-field resize-none text-sm leading-relaxed w-full"
+                      />
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => saveEdit(c.id)} disabled={savingComment || !editingContent.trim()}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">
+                          <Check size={12} /> {savingComment ? 'Saving…' : 'Save'}
+                        </button>
+                        <button onClick={cancelEdit}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-semibold rounded-lg transition-colors">
+                          <X size={12} /> Cancel
+                        </button>
+                        <span className="text-xs text-gray-400">Esc to cancel</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {c.content}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -1,17 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/axios'
-
-export const fetchTasks      = createAsyncThunk('tasks/list',    async pid          => api.get(`/projects/${pid}/tasks`))
-export const fetchMyTasks    = createAsyncThunk('tasks/mine',    async ()           => api.get('/tasks/my'))
-export const fetchTaskDetail = createAsyncThunk('tasks/detail',  async id           => api.get(`/tasks/${id}`))
-export const createTask      = createAsyncThunk('tasks/create',  async ({ pid, data }) => api.post(`/projects/${pid}/tasks`, data))
-export const updateTask      = createAsyncThunk('tasks/update',  async ({ id, data }) => api.put(`/tasks/${id}`, data))
+ 
+export const fetchTasks      = createAsyncThunk('tasks/list',    async pid              => api.get(`/projects/${pid}/tasks`))
+export const fetchMyTasks    = createAsyncThunk('tasks/mine',    async ()               => api.get('/tasks/my'))
+export const fetchTaskDetail = createAsyncThunk('tasks/detail',  async id               => api.get(`/tasks/${id}`))
+export const createTask      = createAsyncThunk('tasks/create',  async ({ pid, data })  => api.post(`/projects/${pid}/tasks`, data))
+export const updateTask      = createAsyncThunk('tasks/update',  async ({ id, data })   => api.put(`/tasks/${id}`, data))
 export const deleteTask      = createAsyncThunk('tasks/delete',  async id => {
   const r = await api.delete(`/tasks/${id}`)
   return { id, progress: r.data?.progress }
 })
-export const addComment      = createAsyncThunk('tasks/comment', async ({ id, content }) => api.post(`/tasks/${id}/comments`, { content }))
-
+export const addComment    = createAsyncThunk('tasks/comment',       async ({ id, content })           => api.post(`/tasks/${id}/comments`, { content }))
+export const editComment   = createAsyncThunk('tasks/editComment',   async ({ taskId, commentId, content }) => api.put(`/tasks/${taskId}/comments/${commentId}`, { content }))
+export const deleteComment = createAsyncThunk('tasks/deleteComment', async ({ taskId, commentId }) => {
+  await api.delete(`/tasks/${taskId}/comments/${commentId}`)
+  return { commentId }
+})
+ 
 const taskSlice = createSlice({
   name: 'tasks',
   initialState: { list: [], myTasks: [], current: null, loading: false },
@@ -34,8 +39,24 @@ const taskSlice = createSlice({
     b.addCase(addComment.fulfilled, (s, a) => {
       if (s.current) s.current.comments = [...(s.current.comments || []), a.payload.data]
     })
+    // Edit comment — update content and mark as edited
+    b.addCase(editComment.fulfilled, (s, a) => {
+      if (s.current?.comments) {
+        s.current.comments = s.current.comments.map(c =>
+          c.id === a.payload.data.id
+            ? { ...c, content: a.payload.data.content, is_edited: true }
+            : c
+        )
+      }
+    })
+    // Delete comment — remove from list
+    b.addCase(deleteComment.fulfilled, (s, a) => {
+      if (s.current?.comments) {
+        s.current.comments = s.current.comments.filter(c => c.id !== a.payload.commentId)
+      }
+    })
   },
 })
-
+ 
 export const { clearCurrentTask } = taskSlice.actions
 export default taskSlice.reducer
