@@ -242,7 +242,8 @@ function TopBar({ onMenuClick }) {
  
   return (
     <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 sm:px-6 gap-4 shrink-0 z-20">
-      <button onClick={onMenuClick} className="lg:hidden p-2 -ml-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+      {/* Menu button — visible on screens smaller than md */}
+      <button onClick={onMenuClick} className="md:hidden p-2 -ml-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
         <Menu size={20} />
       </button>
  
@@ -300,10 +301,8 @@ function TopBar({ onMenuClick }) {
       </div>
  
       <div className="flex items-center gap-3 ml-auto">
- 
         {/* Dark mode toggle */}
-        <button
-          onClick={toggleDark}
+        <button onClick={toggleDark}
           className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-white transition-colors"
           title={dark ? 'Switch to light mode' : 'Switch to dark mode'}>
           {dark ? <Sun size={20} /> : <Moon size={20} />}
@@ -386,12 +385,14 @@ export default function AppLayout() {
  
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden">
-      <div className="hidden lg:flex lg:w-64 lg:shrink-0">
+      {/* Sidebar — visible on md (768px) and above */}
+      <div className="hidden md:flex md:w-56 lg:w-64 md:shrink-0">
         <Sidebar />
       </div>
  
+      {/* Mobile overlay sidebar — visible below md */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-40 md:hidden">
           <div className="fixed inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-gray-900 shadow-xl z-50">
             <div className="absolute top-3 right-3">
